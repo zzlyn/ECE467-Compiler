@@ -132,7 +132,7 @@ RSQ_F
 %left OR
 %left AND
 
-%left LT LE EQ NE GT GE
+%nonassoc LT LE EQ NE GT GE
 
 // '+', '-' lower priority than '*', '/' which is 
 // lower than '^'.
