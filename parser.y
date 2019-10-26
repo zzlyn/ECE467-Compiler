@@ -158,64 +158,100 @@ RSQ_F
  *    1. Add code to rules for construction of AST.
  ***********************************************************************/
 program
-  :   tokens
+  :  scope                                                              { yTRACE("program -> scope"); }
   ;
-tokens
-  :  tokens token  
-  |      
+scope
+  :  LSCOPE declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} "); }
   ;
-token
-  :	LT {}
-  |	LE {}
-  |	EQ {}
-  |	NE {}
-  |	GT {}
-  |	GE {}
-  |     IF {}
-  |     THEN {}
-  |     ELSE {}
-  |     WHILE {}
-  |     ID {}
-  |     CONST {}
-  |     INT_T {}
-  |     INT {}
-  |     FLOAT_T {}
-  |     FLOAT {}
-  |     LBRAC {}
-  |     RBRAC {}
-  |     LSQBRAC {}
-  |     RSQBRAC {}
-  |     LSCOPE {}
-  |     RSCOPE {}
-  |     COMMA {}
-  |     SEMICOLON {}
-  |     PLUS {}
-  |     MINUS {}
-  |     MUL {}
-  |     DIV {}
-  |     POWER {}
-  |     BOOL_T {}
-  |     BOOL_TRUE {}
-  |     BOOL_FALSE {}
-  |     ASSIGN {}
-  |     NOT {}
-  |     AND {}
-  |     OR {}
-  |     VOID_T {}
-  |     VEC2_T {}
-  |     VEC3_T {}
-  |     VEC4_T {}
-  |     BVEC2_T {}
-  |     BVEC3_T {}
-  |     BVEC4_T {}
-  |     IVEC2_T {}
-  |     IVEC3_T {}
-  |     IVEC4_T {}
-  |     DP3_F {}
-  |     LIT_F {}
-  |     RSQ_F {}    
-  ;	
-
+declarations
+  :  declarations declaration                                           { yTRACE("declarations -> declarations declaration"); }
+  |  /* Epsilon */                                                      { yTRACE("declarations -> epsilon"); }
+  ;
+statements
+  :  statements statement                                               { yTRACE("statements -> statements statement"); }
+  |  /* Epsilon */                                                      { yTRACE("statements -> epsilon"); }
+  ;
+declaration
+  :  type ID SEMICOLON                                                  { yTRACE("declaration -> type ID ;"); }
+  |  type ID ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); }
+  |  CONST type ID ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); }
+  ;
+statement
+  :  variable ASSIGN expression SEMICOLON                               { yTRACE("statement -> variable = expression ;"); }
+  |  IF LBRAC expression RBRAC statement else_statement                 { yTRACE("statement -> if ( expression ) statement else_statement"); }
+  |  WHILE LBRAC expression RBRAC statement                             { yTRACE("statement -> while ( expression ) statement"); }
+  |  scope                                                              { yTRACE("statement -> scope"); }
+  |  SEMICOLON                                                          { yTRACE("statement -> ;"); }
+  ;
+else_statement
+  :  ELSE statement                                                     { yTRACE("else_statement -> else statement"); }
+  |  /* Epsilon */                                                      { yTRACE("else_statement -> epsilon"); }
+  ;
+variable
+  :  ID                                                                 { yTRACE("variable -> ID"); }
+  |  ID LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); }
+  ;
+type
+  :  INT_T                                                              { yTRACE("type -> int"); }
+  |  FLOAT_T                                                            { yTRACE("type -> float"); }
+  |  BOOL_T                                                             { yTRACE("type -> bool"); }
+  |  VEC2_T                                                             { yTRACE("type -> vec2"); }
+  |  VEC3_T                                                             { yTRACE("type -> vec3"); }
+  |  VEC4_T                                                             { yTRACE("type -> vec4"); }
+  |  BVEC2_T                                                            { yTRACE("type -> bvec2"); }
+  |  BVEC3_T                                                            { yTRACE("type -> bvec3"); }
+  |  BVEC4_T                                                            { yTRACE("type -> bvec4"); }
+  |  IVEC2_T                                                            { yTRACE("type -> ivec2"); }
+  |  IVEC3_T                                                            { yTRACE("type -> ivec3"); }                                                      
+  |  IVEC4_T                                                            { yTRACE("type -> ivec4"); }
+  ;
+expression
+  :  constructor                                                        { yTRACE("expression -> constructor"); }
+  |  function                                                           { yTRACE("expression -> function"); }
+  |  INT                                                                { yTRACE("expression -> integer"); }
+  |  FLOAT                                                              { yTRACE("expression -> floatint point number"); }
+  |  BOOL_TRUE                                                          { yTRACE("expression -> TRUE"); }
+  |  BOOL_FALSE                                                         { yTRACE("expression -> FALSE"); }
+  |  variable                                                           { yTRACE("expression -> variable"); }
+  |  MINUS expression   %prec NEGATIVE                                  { yTRACE("expression -> - expression"); }
+  |  NOT expression     %prec NEGATIVE                                  { yTRACE("expression -> ! expression"); }
+  |  expression relation_op expression                                  { yTRACE("expression -> expression relation_op expression"); }
+  |  expression math_op expression                                      { yTRACE("expression -> expression math_op expression"); }
+  |  LBRAC expression RBRAC                                             { yTRACE("expression -> ( expression )"); }
+  ;
+relation_op
+  :  EQ                                                                 { yTRACE("relation_op -> =="); }
+  |  NE                                                                 { yTRACE("relation_op -> !="); }
+  |  LT                                                                 { yTRACE("relation_op -> <"); }
+  |  LE                                                                 { yTRACE("relation_op -> <="); }
+  |  GT                                                                 { yTRACE("relation_op -> >"); }
+  |  GE                                                                 { yTRACE("relation_op -> >="); }
+  |  AND                                                                { yTRACE("relation_op -> &&"); }
+  |  OR                                                                 { yTRACE("relation_op -> ||"); }
+  ;
+math_op
+  :  PLUS                                                               { yTRACE("math_op -> +"); }
+  |  MINUS                                                              { yTRACE("math_op -> -"); }
+  |  MUL                                                                { yTRACE("math_op -> *"); }
+  |  DIV                                                                { yTRACE("math_op -> /"); }
+  |  POWER                                                              { yTRACE("math_op -> ^"); }
+  ;
+constructor
+  :  type LBRAC arguments RBRAC                                         { yTRACE("constructor -> type ( arguments )"); }
+  ;
+arguments
+  :  arguments COMMA expression                                         { yTRACE("arguments -> arguments , expression"); }
+  |  expression                                                         { yTRACE("arguments -> expression"); }
+  ;
+function
+  :  predefined_function LBRAC arguments RBRAC                          { yTRACE("function -> predefined_function ( arguments )"); }
+  |  predefined_function LBRAC RBRAC                                    { yTRACE("function -> predefined_function ( )"); }
+  ;
+predefined_function
+  : DP3_F                                                               { yTRACE("predefined_function -> dp3"); }
+  | LIT_F                                                               { yTRACE("predefined_function -> lit"); }
+  | RSQ_F                                                               { yTRACE("predefined_function -> rsq"); }
+  ;
 
 %%
 
