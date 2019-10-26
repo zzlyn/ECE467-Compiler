@@ -56,6 +56,8 @@ extern int yyline;        /* variable holding current line number   */
 }
 
 %token 
+
+// Relational operations
 LT
 LE
 EQ
@@ -63,6 +65,7 @@ NE
 GT
 GE
 
+// Basic system keywords.
 IF
 THEN
 ELSE
@@ -72,11 +75,13 @@ ID
 
 CONST
 
+// Types
 INT_T
 INT
 FLOAT_T
 FLOAT
 
+// Symbols
 LBRAC
 RBRAC
 LSQBRAC
@@ -87,12 +92,14 @@ RSCOPE
 COMMA 
 SEMICOLON 
 
+// Math ops.
 PLUS 
 MINUS 
 MUL 
 DIV 
 POWER 
 
+// Boolean stuff.
 BOOL_T 
 BOOL_TRUE 
 BOOL_FALSE 
@@ -103,6 +110,7 @@ NOT
 AND
 OR
 
+// Vector types.
 VOID_T
 VEC2_T
 VEC3_T
@@ -114,11 +122,29 @@ IVEC2_T
 IVEC3_T
 IVEC4_T
 
+// Predefined functions.
 DP3_F
 LIT_F
 RSQ_F
 
 %start    program
+
+%left OR
+%left AND
+
+%left LT LE EQ NE GT GE
+
+// '+', '-' lower priority than '*', '/' which is 
+// lower than '^'.
+%left PLUS MINUS
+%left MUL DIV
+%right POWER
+
+// Strictly for '!' or '-' before variables.
+%left NEGATIVE
+
+// '[*]' and '(*)' are instantly reduced.
+%left LSQBRAC RSQBRAC LBRAC RBRAC
 
 %%
 
@@ -132,7 +158,7 @@ RSQ_F
  *    1. Add code to rules for construction of AST.
  ***********************************************************************/
 program
-  :   tokens       
+  :   tokens
   ;
 tokens
   :  tokens token  
