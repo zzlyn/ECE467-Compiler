@@ -237,9 +237,12 @@ arguments
   :  arguments COMMA expression                                         { yTRACE("arguments -> arguments , expression"); }
   |  expression                                                         { yTRACE("arguments -> expression"); }
   ;
+arguments_opt
+  :  arguments                                                          { yTRACE("arguments_opt -> arguments"); }
+  |  /* Epsilon */                                                      { yTRACE("arguments_opt -> epsilon"); }
+  ;
 function
-  :  predefined_function LBRAC arguments RBRAC                          { yTRACE("function -> predefined_function ( arguments )"); }
-  |  predefined_function LBRAC RBRAC                                    { yTRACE("function -> predefined_function ( )"); }
+  :  predefined_function LBRAC arguments_opt RBRAC                      { yTRACE("function -> predefined_function ( arguments_opt )"); }
   ;
 predefined_function
   : DP3_F                                                               { yTRACE("predefined_function -> dp3"); }
