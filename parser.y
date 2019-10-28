@@ -215,26 +215,20 @@ expression
   |  variable                                                           { yTRACE("expression -> variable"); }
   |  MINUS expression   %prec NEGATIVE                                  { yTRACE("expression -> - expression"); }
   |  NOT expression     %prec NEGATIVE                                  { yTRACE("expression -> ! expression"); }
-  |  expression relation_op expression                                  { yTRACE("expression -> expression relation_op expression"); }
-  |  expression math_op expression                                      { yTRACE("expression -> expression math_op expression"); }
+  |  expression EQ expression                                           { yTRACE("expression -> expression == expression"); }
+  |  expression NE expression                                           { yTRACE("expression -> expression != expression"); }
+  |  expression LT expression                                           { yTRACE("expression -> expression < expression"); }
+  |  expression LE expression                                           { yTRACE("expression -> expression <= expression"); }
+  |  expression GT expression                                           { yTRACE("expression -> expression > expression"); }
+  |  expression GE expression                                           { yTRACE("expression -> expression >= expression"); }
+  |  expression AND expression                                          { yTRACE("expression -> expression && expression"); }
+  |  expression OR expression                                           { yTRACE("expression -> expression || expression"); }
+  |  expression PLUS expression                                         { yTRACE("expression -> expression + expression"); }
+  |  expression MINUS expression                                        { yTRACE("expression -> expression - expression"); }
+  |  expression MUL expression                                          { yTRACE("expression -> expression * expression"); }
+  |  expression DIV expression                                          { yTRACE("expression -> expression / expression"); }
+  |  expression POWER expression                                        { yTRACE("expression -> expression ^ expression"); }
   |  LBRAC expression RBRAC                                             { yTRACE("expression -> ( expression )"); }
-  ;
-relation_op
-  :  EQ                                                                 { yTRACE("relation_op -> =="); }
-  |  NE                                                                 { yTRACE("relation_op -> !="); }
-  |  LT                                                                 { yTRACE("relation_op -> <"); }
-  |  LE                                                                 { yTRACE("relation_op -> <="); }
-  |  GT                                                                 { yTRACE("relation_op -> >"); }
-  |  GE                                                                 { yTRACE("relation_op -> >="); }
-  |  AND                                                                { yTRACE("relation_op -> &&"); }
-  |  OR                                                                 { yTRACE("relation_op -> ||"); }
-  ;
-math_op
-  :  PLUS                                                               { yTRACE("math_op -> +"); }
-  |  MINUS                                                              { yTRACE("math_op -> -"); }
-  |  MUL                                                                { yTRACE("math_op -> *"); }
-  |  DIV                                                                { yTRACE("math_op -> /"); }
-  |  POWER                                                              { yTRACE("math_op -> ^"); }
   ;
 constructor
   :  type LBRAC arguments RBRAC                                         { yTRACE("constructor -> type ( arguments )"); }
