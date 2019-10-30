@@ -3,6 +3,8 @@
  *
  * Student Number: 1001257891
  *
+ * Email: zzlyn.lin@mail.utoronto.ca
+ *
  * compiler467.c
  *
  * This is the main driver program for the CSC467F course project
