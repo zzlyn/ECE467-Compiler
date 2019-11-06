@@ -11,7 +11,7 @@
 #include <float.h>
 #include <stdlib.h>
 #include <errno.h>
-
+#include "symbol.h"
 
 /*
 Phase 3: Will be needed if some of the types defined in the parser.tab.h's 
@@ -126,8 +126,10 @@ lit          { yTRACE(LIT_F); return LIT_F; }
                   // Complete yylval.id
 		  yylval.identifier = (char*) malloc(yyleng + 1);
 		  strncpy(yylval.identifier, yytext, yyleng + 1);
+		  updateVarName(yytext);
                   // Tracing & return.
                   yTRACE(ID);
+                  //printf("\nYOOOOOOO DAWWWWWWG %s \n",yytext);
                   return ID;
               }
             }
