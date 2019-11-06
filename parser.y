@@ -17,8 +17,11 @@
 #include <string.h>
 #include "common.h"
 //#include "ast.h"
-//#include "symbol.h"
+#include "symbol.h"
 //#include "semantic.h"
+
+
+
 #define YYERROR_VERBOSE
 #define yTRACE(x)    { if (traceParser) fprintf(traceFile, "%s\n", x); }
 
@@ -158,11 +161,15 @@ RSQ_F
  *    1. Add code to rules for construction of AST.
  ***********************************************************************/
 program
-  :  scope                                                              { yTRACE("program -> scope"); }
+  :  scope                                                              { yTRACE("program -> scope"); print_func(); }
   ;
 scope
-  :  LSCOPE declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} "); }
+  :  lscope  declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} "); subtractScope();  }
   ;
+
+lscope
+  : LSCOPE                                                              { yTRACE("lscope -> LSCOPE"); addScope(); } 
+
 declarations
   :  declarations declaration                                           { yTRACE("declarations -> declarations declaration"); }
   |  /* Epsilon */                                                      { yTRACE("declarations -> epsilon"); }
@@ -176,6 +183,7 @@ declaration
   |  type ID ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); }
   |  CONST type ID ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); }
   ;
+
 statement
   :  variable ASSIGN expression SEMICOLON                               { yTRACE("statement -> variable = expression ;"); }
   |  IF LBRAC expression RBRAC statement else_statement                 { yTRACE("statement -> if ( expression ) statement else_statement"); }
