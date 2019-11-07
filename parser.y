@@ -164,11 +164,9 @@ program
   :  scope                                                              { yTRACE("program -> scope"); }
   ;
 scope
-  :  lscope  declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} "); subtractScope();  }
+  :  LSCOPE  declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} ");  }
   ;
 
-lscope
-  : LSCOPE                                                              { yTRACE("lscope -> LSCOPE"); addScope(); } 
 
 declarations
   :  declarations declaration                                           { yTRACE("declarations -> declarations declaration"); }
@@ -179,14 +177,11 @@ statements
   |  /* Epsilon */                                                      { yTRACE("statements -> epsilon"); }
   ;
 declaration
-  :  type_and_id  SEMICOLON                                                  { yTRACE("declaration -> type ID ;"); }
-  |  type_and_id ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); }
-  |  CONST type_and_id ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); }
+  :  type ID  SEMICOLON                                                  { yTRACE("declaration -> type ID ;"); }
+  |  type ID ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); }
+  |  CONST type ID  ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); }
   ;
 
-
-type_and_id
-  : type ID                                                                   {yTRACE("type_and_id -> type ID "); printVarAndScope(); addToSymbolTable();}
 
 
 statement
@@ -200,23 +195,26 @@ else_statement
   :  ELSE statement                                                     { yTRACE("else_statement -> else statement"); }
   |  /* Epsilon */                                                      { yTRACE("else_statement -> epsilon"); }
   ;
+
+
+// Problem case we need to vid the seocnd one
 variable
-  :  ID                                                                 { yTRACE("variable -> ID"); findUsedSymbol();}
-  |  variable  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); }
+  :  ID                                                                 { yTRACE("variable -> ID"); }
+  |  ID  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); }
   ;
 type
-  :  INT_T                                                              { yTRACE("type -> int"); updateVarType(INT_T); }
-  |  FLOAT_T                                                            { yTRACE("type -> float"); updateVarType(FLOAT_T); }
-  |  BOOL_T                                                             { yTRACE("type -> bool"); updateVarType(BOOL_T); } 
-  |  VEC2_T                                                             { yTRACE("type -> vec2"); updateVarType(VEC2_T);}
-  |  VEC3_T                                                             { yTRACE("type -> vec3"); updateVarType(VEC3_T);}
-  |  VEC4_T                                                             { yTRACE("type -> vec4"); updateVarType(VEC4_T);}
-  |  BVEC2_T                                                            { yTRACE("type -> bvec2"); updateVarType(BVEC2_T);}
-  |  BVEC3_T                                                            { yTRACE("type -> bvec3"); updateVarType(BVEC3_T);}
-  |  BVEC4_T                                                            { yTRACE("type -> bvec4"); updateVarType(BVEC4_T);}
-  |  IVEC2_T                                                            { yTRACE("type -> ivec2"); updateVarType(IVEC2_T);}
-  |  IVEC3_T                                                            { yTRACE("type -> ivec3"); updateVarType(IVEC3_T);}
-  |  IVEC4_T                                                            { yTRACE("type -> ivec4"); updateVarType(IVEC4_T);}
+  :  INT_T                                                              { yTRACE("type -> int");  }
+  |  FLOAT_T                                                            { yTRACE("type -> float"); }
+  |  BOOL_T                                                             { yTRACE("type -> bool");  } 
+  |  VEC2_T                                                             { yTRACE("type -> vec2"); }
+  |  VEC3_T                                                             { yTRACE("type -> vec3"); }
+  |  VEC4_T                                                             { yTRACE("type -> vec4"); }
+  |  BVEC2_T                                                            { yTRACE("type -> bvec2");}
+  |  BVEC3_T                                                            { yTRACE("type -> bvec3");}
+  |  BVEC4_T                                                            { yTRACE("type -> bvec4");}
+  |  IVEC2_T                                                            { yTRACE("type -> ivec2");}
+  |  IVEC3_T                                                            { yTRACE("type -> ivec3");}
+  |  IVEC4_T                                                            { yTRACE("type -> ivec4");}
   ;
 expression
   :  constructor                                                        { yTRACE("expression -> constructor"); }

@@ -4,19 +4,17 @@
 #include <vector> 
 #include <iostream>
 #include <cstring>
+#include <cstdarg>
 
 using namespace std;
 
-vector<std::tr1::unordered_map<string,int>> symbolTable; 
-
-int var_type = -1;
-string var_name = "";
+vector<std::tr1::unordered_map<string,vector<int>>> symbolTable; 
 
 int my_scope_count = 0;
 
 extern "C" void addScope(){
 	my_scope_count += 1; 
-	std::tr1::unordered_map<string,int> scopeTable;
+	std::tr1::unordered_map<string,vector<int>> scopeTable;
 	symbolTable.push_back(scopeTable);
         cout << endl << "Scope count is increased : " << my_scope_count << endl;  
 }
@@ -28,24 +26,29 @@ extern "C" void subtractScope(){
 }
 
 
-extern "C" void updateVarType(int new_var_type){
-	var_type = new_var_type;
-}
-
-extern "C" void updateVarName ( char * newVarName){
-	var_name = newVarName;
-}
-
-extern "C" void printVarAndScope(){
-	cout << endl << "The var name is " << var_name << " the scope is " << my_scope_count - 1<< endl;
-}
-
-extern "C" void addToSymbolTable(){
+// Provide varibale name first and all the types after. Can take more than one
+extern "C" void addToSymbolTable(char * var_name , ... ){
 	if (my_scope_count > 0){
 		auto variableFound = symbolTable[my_scope_count -1].find(var_name);
 		if (variableFound == symbolTable[my_scope_count - 1].end()){
-			cout << endl << "Adding new variable. Var name is " << var_name << " type is " << var_type << " scope is " << my_scope_count - 1 << endl;
-			symbolTable[my_scope_count - 1][var_name] = var_type;
+
+			char * varName = var_name;
+                        cout <<endl << "YOOOOOOOOOVar name is " << varName << endl;
+
+                        vector <int> emptyVector; 
+			symbolTable[my_scope_count - 1][varName] =  emptyVector;
+
+			va_list args;
+			va_start(args, var_name);
+
+			while (*var_name != '\0') {
+				int typeValue =  va_arg(args, int);
+				cout << endl << "    The type is " << typeValue << endl;
+				symbolTable[my_scope_count - 1][var_name].push_back(typeValue);
+				++var_name;
+			}
+			va_end(args);
+
 		} 
 		else{
 			cout << endl << "ERROR : Redecleration of variable!" << endl;
@@ -53,14 +56,21 @@ extern "C" void addToSymbolTable(){
 	}
 }
 
-extern "C" void findUsedSymbol(){
+
+// This will find the user symbol from the symbol table. Doesn't return anything for now. Not sure what ast implementation will look like. 
+extern "C" void findUsedSymbol(char * var_name){
 	int currScope = my_scope_count - 1;
 	int varFound  = 0;
 	while(!varFound && currScope >= 0 ){
 		auto variableFound = symbolTable[currScope].find(var_name);
 		if ( variableFound !=  symbolTable[currScope].end()){
 			varFound = 1;
-			cout << endl << "Variable found name is " << var_name << " is in scope " << currScope <<  ". Type is " << symbolTable[currScope][var_name] << endl;
+			cout << endl << "Variable found name is " << var_name << " " <<endl; 
+
+			for (int i = 0; i <  symbolTable[currScope][var_name].size(); i ++){
+				cout << endl << "    Type is " +  symbolTable[currScope][var_name][i] << endl;
+			}
+
 		}
 		else {
 			currScope-=1;
@@ -72,9 +82,6 @@ extern "C" void findUsedSymbol(){
 }
 
 
-//umap[1] = 1
-
-//std::cout << "YEEEE" << 1 << std::endl;
 
 
 

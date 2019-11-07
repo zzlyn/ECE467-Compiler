@@ -10,19 +10,14 @@
 #define SCOPE_CPP
 
 
-extern "C"  void print_func();
 extern "C"  void addScope();
 extern "C"  void subtractScope();
 
 
-extern "C" void updateVarType(int new_var_type);
-extern "C" void updateVarName ( char * newVarName);
-extern "C" void printVarAndScope();
-extern "C" void addToSymbolTable();
-extern "C" void updateVarType(int new_var_type);
-extern "C" void findUsedSymbol();
 
+extern "C" void findUsedSymbol(char * var_name);
 
+extern "C" void addToSymbolTable(char * var_name , ... );
 
 #endif
 

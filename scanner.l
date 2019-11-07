@@ -126,7 +126,6 @@ lit          { yTRACE(LIT_F); return LIT_F; }
                   // Complete yylval.id
 		  yylval.identifier = (char*) malloc(yyleng + 1);
 		  strncpy(yylval.identifier, yytext, yyleng + 1);
-		  updateVarName(yytext);
                   // Tracing & return.
                   yTRACE(ID);
                   //printf("\nYOOOOOOO DAWWWWWWG %s \n",yytext);
