@@ -203,7 +203,7 @@ variable
   |  ID  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); }
   ;
 type
-  :  INT_T                                                              { yTRACE("type -> int");  }
+  :  INT_T                                                              { yTRACE("type -> int");}
   |  FLOAT_T                                                            { yTRACE("type -> float"); }
   |  BOOL_T                                                             { yTRACE("type -> bool");  } 
   |  VEC2_T                                                             { yTRACE("type -> vec2"); }

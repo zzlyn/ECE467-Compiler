@@ -26,7 +26,9 @@ extern "C" void subtractScope(){
 }
 
 
-// Provide varibale name first and all the types after. Can take more than one
+// Provide varibale name first and all the types after. Can take more than one. Fomrat for variable argument list. Number of arguments you want to look at
+// then the arguments. Make sure that the remaining number of arguments is atleast the number of variables you specified
+
 extern "C" void addToSymbolTable(char * var_name , ... ){
 	if (my_scope_count > 0){
 		auto variableFound = symbolTable[my_scope_count -1].find(var_name);
@@ -40,13 +42,18 @@ extern "C" void addToSymbolTable(char * var_name , ... ){
 
 			va_list args;
 			va_start(args, var_name);
+			int numOfArgs = va_arg(args, int);
 
-			while (*var_name != '\0') {
-				int typeValue =  va_arg(args, int);
-				cout << endl << "    The type is " << typeValue << endl;
-				symbolTable[my_scope_count - 1][var_name].push_back(typeValue);
-				++var_name;
+			for(int i = 0; i < numOfArgs; i ++){
+                                int typeValue =  va_arg(args, int);
+                                symbolTable[my_scope_count - 1][var_name].push_back(typeValue);
+                                //cout << endl << "    The type is " << typeValue << endl;
 			}
+
+			//int numTypes = symbolTable[my_scope_count - 1][var_name].size();
+                        //cout << endl << "Num types is " << numTypes << endl;
+			
+
 			va_end(args);
 
 		} 
@@ -65,10 +72,11 @@ extern "C" void findUsedSymbol(char * var_name){
 		auto variableFound = symbolTable[currScope].find(var_name);
 		if ( variableFound !=  symbolTable[currScope].end()){
 			varFound = 1;
-			cout << endl << "Variable found name is " << var_name << " " <<endl; 
-
-			for (int i = 0; i <  symbolTable[currScope][var_name].size(); i ++){
-				cout << endl << "    Type is " +  symbolTable[currScope][var_name][i] << endl;
+			//cout << endl << "In findUsedSymbol Variable found name is " << var_name << " " <<endl; 
+			int numTypes =  symbolTable[currScope][var_name].size();
+			//cout << endl << "Num types is " << numTypes << endl;
+			for (int i = 0; i <  numTypes ; i ++){
+				//cout << endl << "    Type is " <<  symbolTable[currScope][var_name][i] << endl;
 			}
 
 		}
