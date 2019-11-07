@@ -55,7 +55,7 @@ extern int yyline;        /* variable holding current line number   */
   int intVal;
   float floatVal;
   bool boolVal;
-  char *identifier;
+  char* identifier;
 }
 
 %token 
@@ -74,15 +74,15 @@ THEN
 ELSE
 WHILE
 
-ID
+%token <identifier> ID
 
 CONST
 
 // Types
 INT_T
-INT
+%token <intVal> INT
 FLOAT_T
-FLOAT
+%token <floatVal> FLOAT
 
 // Symbols
 LBRAC
@@ -104,8 +104,8 @@ POWER
 
 // Boolean stuff.
 BOOL_T 
-BOOL_TRUE 
-BOOL_FALSE 
+%token <boolVal> BOOL_TRUE 
+%token <boolVal> BOOL_FALSE 
 
 ASSIGN 
 
@@ -149,6 +149,20 @@ RSQ_F
 // '[*]' and '(*)' are instantly reduced.
 %left LSQBRAC RSQBRAC LBRAC RBRAC
 
+%type <ast_node> scope
+%type <ast_node> declarations
+%type <ast_node> statements
+%type <ast_node> declaration
+%type <ast_node> statement
+%type <ast_node> variable
+%type <ast_node> type
+%type <ast_node> expression
+%type <ast_node> constructor
+%type <ast_node> function
+%type <ast_node> predefined_function
+%type <ast_node> arguments
+%type <ast_node> arguments_opt
+
 %%
 
 /***********************************************************************
@@ -166,8 +180,6 @@ program
 scope
   :  LSCOPE  declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} ");  }
   ;
-
-
 declarations
   :  declarations declaration                                           { yTRACE("declarations -> declarations declaration"); }
   |  /* Epsilon */                                                      { yTRACE("declarations -> epsilon"); }
@@ -181,9 +193,6 @@ declaration
   |  type ID ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); }
   |  CONST type ID  ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); }
   ;
-
-
-
 statement
   :  variable ASSIGN expression SEMICOLON                               { yTRACE("statement -> variable = expression ;"); }
   |  IF LBRAC expression RBRAC statement else_statement                 { yTRACE("statement -> if ( expression ) statement else_statement"); }
@@ -195,8 +204,6 @@ else_statement
   :  ELSE statement                                                     { yTRACE("else_statement -> else statement"); }
   |  /* Epsilon */                                                      { yTRACE("else_statement -> epsilon"); }
   ;
-
-
 // Problem case we need to vid the seocnd one
 variable
   :  ID                                                                 { yTRACE("variable -> ID"); }
@@ -260,7 +267,6 @@ predefined_function
   | LIT_F                                                               { yTRACE("predefined_function -> lit"); }
   | RSQ_F                                                               { yTRACE("predefined_function -> rsq"); }
   ;
-
 %%
 
 /***********************************************************************ol

@@ -84,9 +84,9 @@ while       { yTRACE(WHILE); return WHILE; }
 
 <<EOF>>     {yyterminate();}
 
-true        { yTRACE(BOOL_TRUE); yylval.boolVal = 1; return BOOL_TRUE; }
+true        { yTRACE(BOOL_TRUE); yylval.boolVal = true; return BOOL_TRUE; }
 
-false       { yTRACE(BOOL_FALSE); yylval.boolVal = 0; return BOOL_FALSE; }
+false       { yTRACE(BOOL_FALSE); yylval.boolVal = false; return BOOL_FALSE; }
 
 bool        { yTRACE(BOOL_T); return BOOL_T; }
 
@@ -124,8 +124,8 @@ lit          { yTRACE(LIT_F); return LIT_F; }
                   yERROR("Identifier exceeds maximum length");
               } else {
                   // Complete yylval.id
-		  yylval.identifier = (char*) malloc(yyleng + 1);
-		  strncpy(yylval.identifier, yytext, yyleng + 1);
+		          yylval.identifier = (char*) malloc(yyleng + 1);
+		          strncpy(yylval.identifier, yytext, yyleng + 1);
                   // Tracing & return.
                   yTRACE(ID);
                   //printf("\nYOOOOOOO DAWWWWWWG %s \n",yytext);
@@ -178,6 +178,14 @@ lit          { yTRACE(LIT_F); return LIT_F; }
 					
 					// TODO: Implement parsing for scientific notations. (dont think
 					// this is required for lab 1)
+                    errno = 0;
+                    float val = strtof(yytext, NULL);
+
+                    if (errno == ERANGE) {
+                        yERROR("Out of bound float.");
+                    }
+                    
+                    yylval.floatVal = val;
 					yTRACE(FLOAT);
 					return FLOAT;
 					}
@@ -187,15 +195,15 @@ lit          { yTRACE(LIT_F); return LIT_F; }
 					// 
 					// This match needs to happen before scientific float match
 					// in order to properly detect say 1.23e9.
-					float val = strtof(yytext, NULL);
-					
 					errno = 0;
+                    float val = strtof(yytext, NULL);
+					
 					if(errno == ERANGE) {
 						yERROR("Out of bound float.");
 					}
 					
 					yylval.floatVal = val;
-                                        yTRACE(FLOAT); 
+                    yTRACE(FLOAT); 
 					return FLOAT;
                                   	}
 
