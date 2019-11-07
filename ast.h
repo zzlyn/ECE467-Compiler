@@ -3,6 +3,7 @@
 #define AST_H_ 1
 
 #include <stdarg.h>
+#include <string>
 
 // Dummy node just so everything compiles, create your own node/nodes
 //
@@ -16,6 +17,7 @@
 // forward declare
 struct node_;
 typedef struct node_ node;
+typedef struct node_ AstNode;
 extern node *ast;
 
 typedef enum {
@@ -49,22 +51,72 @@ struct node_ {
 
   union {
     struct {
-      // declarations?
-      // statements?
+        AstNode* declarations;
+        AstNode* statements;
     } scope;
   
     struct {
-      int op;
-      node *right;
+        int op;
+        AstNode *right;
     } unary_expr;
 
     struct {
-      int op;
-      node *left;
-      node *right;
+        int op;
+        AstNode* left;
+        AstNode* right;
     } binary_expr;
 
-    // etc.
+    // declarations, statements, variable, if_statement, assignment, constructor, arguments, function
+    struct {
+        AstNode* declarations;
+        AstNode* declaration;
+    } declarations;
+
+    struct {
+        bool is_const;
+        int type; // Refer to parser.y.
+        std::string id;
+        AstNode* expression;
+    } declaration;
+
+    struct {
+        AstNode* statements;
+        AstNode* statement;
+    } statements;
+
+    struct {
+        bool is_const;
+        std::string id;
+        int index; // Dereference index, set to -1 if id is stand alone.
+    } variable;
+
+    struct {
+        AstNode* condition;
+        AstNode* statement;
+        AstNode* else_statement;
+    } if_statement;
+
+    struct {
+        int type; // Defined as token types in parser.y.
+        AstNode* variable;
+        AstNode* expression;
+    } assignment;
+
+    struct {
+        int type; // Refer to parser.y.
+        AstNode* arguments;
+    } constructor;
+
+    struct {
+        std::string name;
+        AstNode* arguments;
+    } function;
+
+    struct {
+        AstNode* arguments;
+        AstNode* expression;
+    } arguments;
+  
   };
 };
 
