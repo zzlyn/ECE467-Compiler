@@ -29,6 +29,25 @@ void yyerror(const char* s);    /* what to do in case of error            */
 int yylex();              /* procedure for calling lexical analyzer */
 extern int yyline;        /* variable holding current line number   */
 
+// Translates function code to names for cleaner code.
+std::string function_code_to_name(int code) {
+    if (code == 0) {
+        return "DP3";
+    }
+
+    if (code == 1) {
+        return "LIT";
+    }
+
+    if (code == 2) {
+        return "RSQ";
+    }
+    
+    // We screwed.
+    return "haha";
+}
+
+
 %}
 
 /***********************************************************************
@@ -56,7 +75,7 @@ extern int yyline;        /* variable holding current line number   */
   float floatVal;
   bool boolVal;
   char* identifier;
-
+  int function_code;
   AstNode* ast_node;
 }
 
@@ -151,17 +170,19 @@ RSQ_F
 // '[*]' and '(*)' are instantly reduced.
 %left LSQBRAC RSQBRAC LBRAC RBRAC
 
+%type <ast_node> program
 %type <ast_node> scope
 %type <ast_node> declarations
 %type <ast_node> statements
 %type <ast_node> type
 %type <ast_node> declaration
 %type <ast_node> statement
+%type <ast_node> else_statement
 %type <ast_node> variable
 %type <ast_node> expression
 %type <ast_node> constructor
 %type <ast_node> function
-%type <ast_node> predefined_function
+%type <intVal> predefined_function
 %type <ast_node> arguments
 %type <ast_node> arguments_opt
 
@@ -177,97 +198,97 @@ RSQ_F
  *    1. Add code to rules for construction of AST.
  ***********************************************************************/
 program
-  :  scope                                                              { yTRACE("program -> scope"); }
+  :  scope                                                              { yTRACE("program -> scope"); $$=$1; }
   ;
 scope
-  :  LSCOPE  declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} ");  }
+  :  LSCOPE  declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} "); $$=ast_allocate(SCOPE_NODE, $2, $3); }
   ;
 declarations
-  :  declarations declaration                                           { yTRACE("declarations -> declarations declaration"); }
-  |  /* Epsilon */                                                      { yTRACE("declarations -> epsilon"); }
+  :  declarations declaration                                           { yTRACE("declarations -> declarations declaration"); $$=ast_allocate(DECLARATIONS_NODE, $1, $2); }
+  |  /* Epsilon */                                                      { yTRACE("declarations -> epsilon"); $$=NULL; }
   ;
 statements
-  :  statements statement                                               { yTRACE("statements -> statements statement"); }
-  |  /* Epsilon */                                                      { yTRACE("statements -> epsilon"); }
+  :  statements statement                                               { yTRACE("statements -> statements statement"); $$=ast_allocate(STATEMENTS_NODE, $1, $2); }
+  |  /* Epsilon */                                                      { yTRACE("statements -> epsilon"); $$=NULL; }
   ;
 declaration
-  :  type ID  SEMICOLON                                                  { yTRACE("declaration -> type ID ;"); }
-  |  type ID ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); }
-  |  CONST type ID  ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); }
+  :  type ID  SEMICOLON                                                  { yTRACE("declaration -> type ID ;"); std::string tmp($2); $$=ast_allocate(DECLARATION_NODE, 0, $1, tmp, NULL); }
+  |  type ID ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); std::string tmp($2); $$=ast_allocate(DECLARATION_NODE, 0, $1, tmp, $4); }
+  |  CONST type ID  ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); std::string tmp($3); $$=ast_allocate(DECLARATION_NODE, 1, $2, tmp, $5); }
   ;
 statement
-  :  variable ASSIGN expression SEMICOLON                               { yTRACE("statement -> variable = expression ;"); }
-  |  IF LBRAC expression RBRAC statement else_statement                 { yTRACE("statement -> if ( expression ) statement else_statement"); }
-  |  WHILE LBRAC expression RBRAC statement                             { yTRACE("statement -> while ( expression ) statement"); }
-  |  scope                                                              { yTRACE("statement -> scope"); }
-  |  SEMICOLON                                                          { yTRACE("statement -> ;"); }
+  :  variable ASSIGN expression SEMICOLON                               { yTRACE("statement -> variable = expression ;");  $$=ast_allocate(ASSIGNMENT_NODE, $1, $3); }
+  |  IF LBRAC expression RBRAC statement else_statement                 { yTRACE("statement -> if ( expression ) statement else_statement"); $$=ast_allocate(IF_STATEMENT_NODE, $3, $5, $6); }
+  |  WHILE LBRAC expression RBRAC statement                             { yTRACE("statement -> while ( expression ) statement"); /* AST construction ignored as per lab manual. */}
+  |  scope                                                              { yTRACE("statement -> scope"); $$=$1; }
+  |  SEMICOLON                                                          { yTRACE("statement -> ;"); $$=NULL; }
   ;
 else_statement
-  :  ELSE statement                                                     { yTRACE("else_statement -> else statement"); }
-  |  /* Epsilon */                                                      { yTRACE("else_statement -> epsilon"); }
+  :  ELSE statement                                                     { yTRACE("else_statement -> else statement"); $$=$2; }
+  |  /* Epsilon */                                                      { yTRACE("else_statement -> epsilon"); $$=NULL; }
   ;
 // Problem case we need to vid the seocnd one
 variable
-  :  ID                                                                 { yTRACE("variable -> ID"); }
-  |  ID  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); }
+  :  ID                                                                 { yTRACE("variable -> ID"); $$=ast_allocate(VAR_NODE, 0/* is_const: Found in symbol table */, NULL/* type node: Found in symbol table*/, $1, -1); }
+  |  ID  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); $$=ast_allocate(VAR_NODE, 0, NULL, $1, $3); }
   ;
 type
-  :  INT_T                                                              { yTRACE("type -> int");}
-  |  FLOAT_T                                                            { yTRACE("type -> float"); }
-  |  BOOL_T                                                             { yTRACE("type -> bool");  } 
-  |  VEC2_T                                                             { yTRACE("type -> vec2"); }
-  |  VEC3_T                                                             { yTRACE("type -> vec3"); }
-  |  VEC4_T                                                             { yTRACE("type -> vec4"); }
-  |  BVEC2_T                                                            { yTRACE("type -> bvec2");}
-  |  BVEC3_T                                                            { yTRACE("type -> bvec3");}
-  |  BVEC4_T                                                            { yTRACE("type -> bvec4");}
-  |  IVEC2_T                                                            { yTRACE("type -> ivec2");}
-  |  IVEC3_T                                                            { yTRACE("type -> ivec3");}
-  |  IVEC4_T                                                            { yTRACE("type -> ivec4");}
+  :  INT_T                                                              { yTRACE("type -> int"); $$=ast_allocate(TYPE_NODE, $1, "int"); }
+  |  FLOAT_T                                                            { yTRACE("type -> float"); $$=ast_allocate(TYPE_NODE, $1, "float"); }
+  |  BOOL_T                                                             { yTRACE("type -> bool"); $$=ast_allocate(TYPE_NODE, $1, "bool"); } 
+  |  VEC2_T                                                             { yTRACE("type -> vec2"); $$=ast_allocate(TYPE_NODE, $1, "vec2"); }
+  |  VEC3_T                                                             { yTRACE("type -> vec3"); $$=ast_allocate(TYPE_NODE, $1, "vec3"); }
+  |  VEC4_T                                                             { yTRACE("type -> vec4"); $$=ast_allocate(TYPE_NODE, $1, "vec4"); }
+  |  BVEC2_T                                                            { yTRACE("type -> bvec2"); $$=ast_allocate(TYPE_NODE, $1, "bvec2"); }
+  |  BVEC3_T                                                            { yTRACE("type -> bvec3"); $$=ast_allocate(TYPE_NODE, $1, "bvec3"); }
+  |  BVEC4_T                                                            { yTRACE("type -> bvec4"); $$=ast_allocate(TYPE_NODE, $1, "bvec4"); }
+  |  IVEC2_T                                                            { yTRACE("type -> ivec2"); $$=ast_allocate(TYPE_NODE, $1, "ivec2"); }
+  |  IVEC3_T                                                            { yTRACE("type -> ivec3"); $$=ast_allocate(TYPE_NODE, $1, "ivec3"); }
+  |  IVEC4_T                                                            { yTRACE("type -> ivec4"); $$=ast_allocate(TYPE_NODE, $1, "ivec4"); }
   ;
 expression
-  :  constructor                                                        { yTRACE("expression -> constructor"); }
-  |  function                                                           { yTRACE("expression -> function"); }
-  |  INT                                                                { yTRACE("expression -> integer"); }
-  |  FLOAT                                                              { yTRACE("expression -> floatint point number"); }
-  |  BOOL_TRUE                                                          { yTRACE("expression -> TRUE"); }
-  |  BOOL_FALSE                                                         { yTRACE("expression -> FALSE"); }
-  |  variable                                                           { yTRACE("expression -> variable"); }
-  |  MINUS expression   %prec NEGATIVE                                  { yTRACE("expression -> - expression"); }
-  |  NOT expression     %prec NEGATIVE                                  { yTRACE("expression -> ! expression"); }
-  |  expression EQ expression                                           { yTRACE("expression -> expression == expression"); }
-  |  expression NE expression                                           { yTRACE("expression -> expression != expression"); }
-  |  expression LT expression                                           { yTRACE("expression -> expression < expression"); }
-  |  expression LE expression                                           { yTRACE("expression -> expression <= expression"); }
-  |  expression GT expression                                           { yTRACE("expression -> expression > expression"); }
-  |  expression GE expression                                           { yTRACE("expression -> expression >= expression"); }
-  |  expression AND expression                                          { yTRACE("expression -> expression && expression"); }
-  |  expression OR expression                                           { yTRACE("expression -> expression || expression"); }
-  |  expression PLUS expression                                         { yTRACE("expression -> expression + expression"); }
-  |  expression MINUS expression                                        { yTRACE("expression -> expression - expression"); }
-  |  expression MUL expression                                          { yTRACE("expression -> expression * expression"); }
-  |  expression DIV expression                                          { yTRACE("expression -> expression / expression"); }
-  |  expression POWER expression                                        { yTRACE("expression -> expression ^ expression"); }
-  |  LBRAC expression RBRAC                                             { yTRACE("expression -> ( expression )"); }
+  :  constructor                                                        { yTRACE("expression -> constructor"); $$=$1; }
+  |  function                                                           { yTRACE("expression -> function"); $$=$1; }
+  |  INT                                                                { yTRACE("expression -> integer"); $$=ast_allocate(INT_NODE, $1); }
+  |  FLOAT                                                              { yTRACE("expression -> floatint point number"); double tmp = (double)$1; $$=ast_allocate(FLOAT_NODE, tmp); }
+  |  BOOL_TRUE                                                          { yTRACE("expression -> TRUE"); $$=ast_allocate(INT_NODE, 1); }
+  |  BOOL_FALSE                                                         { yTRACE("expression -> FALSE"); $$=ast_allocate(INT_NODE, 0); }
+  |  variable                                                           { yTRACE("expression -> variable"); $$=$1; }
+  |  MINUS expression   %prec NEGATIVE                                  { yTRACE("expression -> - expression"); $$=ast_allocate(UNARY_EXPRESSION_NODE, MINUS, $2); }
+  |  NOT expression     %prec NEGATIVE                                  { yTRACE("expression -> ! expression"); $$=ast_allocate(UNARY_EXPRESSION_NODE, NOT, $2); }
+  |  expression EQ expression                                           { yTRACE("expression -> expression == expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, EQ, $1, $3); }
+  |  expression NE expression                                           { yTRACE("expression -> expression != expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, NE, $1, $3); }
+  |  expression LT expression                                           { yTRACE("expression -> expression < expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, LT, $1, $3); }
+  |  expression LE expression                                           { yTRACE("expression -> expression <= expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, LE, $1, $3); }
+  |  expression GT expression                                           { yTRACE("expression -> expression > expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, GT, $1, $3); }
+  |  expression GE expression                                           { yTRACE("expression -> expression >= expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, GE, $1, $3); }
+  |  expression AND expression                                          { yTRACE("expression -> expression && expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, AND, $1, $3); }
+  |  expression OR expression                                           { yTRACE("expression -> expression || expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, OR, $1, $3); }
+  |  expression PLUS expression                                         { yTRACE("expression -> expression + expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, PLUS, $1, $3); }
+  |  expression MINUS expression                                        { yTRACE("expression -> expression - expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, MINUS, $1, $3); }
+  |  expression MUL expression                                          { yTRACE("expression -> expression * expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, MUL, $1, $3); }
+  |  expression DIV expression                                          { yTRACE("expression -> expression / expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, DIV, $1, $3); }
+  |  expression POWER expression                                        { yTRACE("expression -> expression ^ expression"); $$=ast_allocate(BINARY_EXPRESSION_NODE, POWER, $1, $3); }
+  |  LBRAC expression RBRAC                                             { yTRACE("expression -> ( expression )"); $$=$2; }
   ;
 constructor
-  :  type LBRAC arguments RBRAC                                         { yTRACE("constructor -> type ( arguments )"); }
+  :  type LBRAC arguments RBRAC                                         { yTRACE("constructor -> type ( arguments )"); $$=ast_allocate(CONSTRUCTOR_NODE, $1, $3); }
   ;
 arguments
-  :  arguments COMMA expression                                         { yTRACE("arguments -> arguments , expression"); }
-  |  expression                                                         { yTRACE("arguments -> expression"); }
+  :  arguments COMMA expression                                         { yTRACE("arguments -> arguments , expression"); $$=ast_allocate(ARGUMENTS_NODE, $1, $3); }
+  |  expression                                                         { yTRACE("arguments -> expression"); $$=ast_allocate(ARGUMENTS_NODE, NULL, $1); }
   ;
 arguments_opt
-  :  arguments                                                          { yTRACE("arguments_opt -> arguments"); }
-  |  /* Epsilon */                                                      { yTRACE("arguments_opt -> epsilon"); }
+  :  arguments                                                          { yTRACE("arguments_opt -> arguments"); $$=$1; }
+  |  /* Epsilon */                                                      { yTRACE("arguments_opt -> epsilon"); $$=NULL; }
   ;
 function
-  :  predefined_function LBRAC arguments_opt RBRAC                      { yTRACE("function -> predefined_function ( arguments_opt )"); }
+  :  predefined_function LBRAC arguments_opt RBRAC                      { yTRACE("function -> predefined_function ( arguments_opt )"); $$=ast_allocate(FUNCTION_NODE, function_code_to_name($1), $3); }
   ;
 predefined_function
-  : DP3_F                                                               { yTRACE("predefined_function -> dp3"); }
-  | LIT_F                                                               { yTRACE("predefined_function -> lit"); }
-  | RSQ_F                                                               { yTRACE("predefined_function -> rsq"); }
+  : DP3_F                                                               { yTRACE("predefined_function -> dp3"); $$=0; }
+  | LIT_F                                                               { yTRACE("predefined_function -> lit"); $$=1; }
+  | RSQ_F                                                               { yTRACE("predefined_function -> rsq"); $$=2; }
   ;
 %%
 

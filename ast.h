@@ -34,6 +34,7 @@ typedef enum {
   VAR_NODE              = (1 << 2) | (1 << 8),
   FUNCTION_NODE         = (1 << 2) | (1 << 9),
   CONSTRUCTOR_NODE      = (1 << 2) | (1 << 10),
+  TYPE_NODE             = (1 << 2) | (1 << 11),
 
   STATEMENT_NODE        = (1 << 1),
   STATEMENTS_NODE       = (1 << 1) | (1 << 15),
@@ -70,6 +71,14 @@ struct node_ {
         AstNode* right;
     } binary_expr;
 
+    struct {
+        int val;
+    } integer;
+
+    struct {
+        float val;
+    } float_num;
+
     // declarations, statements, variable, if_statement, assignment, constructor, arguments, function
     struct {
         AstNode* declarations;
@@ -78,6 +87,7 @@ struct node_ {
 
     struct {
         int type; // Refer to parser.y type tokens.
+        std::string to_str; // String representation.
     } type;
 
     struct {
@@ -106,8 +116,7 @@ struct node_ {
     } if_statement;
 
     struct {
-        AstNode* type; // Defined as token types in parser.y.
-        AstNode* variable;
+        AstNode* variable; // Contains type info.
         AstNode* expression;
     } assignment;
 
