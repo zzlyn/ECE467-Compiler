@@ -16,7 +16,7 @@
 
 #include <string.h>
 #include "common.h"
-//#include "ast.h"
+#include "ast.h"
 #include "symbol.h"
 //#include "semantic.h"
 
@@ -56,6 +56,8 @@ extern int yyline;        /* variable holding current line number   */
   float floatVal;
   bool boolVal;
   char* identifier;
+
+  AstNode* ast_node;
 }
 
 %token 
@@ -152,10 +154,10 @@ RSQ_F
 %type <ast_node> scope
 %type <ast_node> declarations
 %type <ast_node> statements
+%type <ast_node> type
 %type <ast_node> declaration
 %type <ast_node> statement
 %type <ast_node> variable
-%type <ast_node> type
 %type <ast_node> expression
 %type <ast_node> constructor
 %type <ast_node> function

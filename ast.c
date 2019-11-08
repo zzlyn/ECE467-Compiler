@@ -23,13 +23,65 @@ node *ast_allocate(node_kind kind, ...) {
 
   switch(kind) {
   
-  // ...
+      case SCOPE_NODE:
+          ast->scope.declarations = va_arg(args, node*);
+          ast->scope.statements = va_arg(args, node*);
+          break;
 
-  case BINARY_EXPRESSION_NODE:
-    ast->binary_expr.op = va_arg(args, int);
-    ast->binary_expr.left = va_arg(args, node *);
-    ast->binary_expr.right = va_arg(args, node *);
-    break;
+      case DECLARATIONS_NODE:
+          ast->declarations.declarations = va_arg(args, node*);
+          ast->declarations.declaration = va_arg(args, node*);
+          break;
+
+      case STATEMENTS_NODE:
+          ast->statements.statements = va_arg(args, node*);
+          ast->statements.statement = va_arg(args, node*);
+          break;
+
+      case UNARY_EXPRESSION_NODE:
+          ast->unary_expr.op = va_arg(args, int);
+          ast->unary_expr.right = va_arg(args, node*);
+          break;
+    
+      case BINARY_EXPRESSION_NODE:
+          ast->binary_expr.op = va_arg(args, int);
+          ast->binary_expr.left = va_arg(args, node*);
+          ast->binary_expr.right = va_arg(args, node*);
+          break;
+
+      case DECLARATION_NODE:
+          ast->declaration.is_const = va_arg(args, int);
+          ast->declaration.type = va_arg(args, node*);
+          ast->declaration.id = va_arg(args, std::string);
+          ast->declaration.expression = va_arg(args, node*);
+          break;
+
+      case VAR_NODE:
+          ast->variable.is_const = va_arg(args, int);
+          ast->variable.id = va_arg(args, std::string);
+          ast->variable.index = va_arg(args, int);
+          break;
+
+      case IF_STATEMENT_NODE:
+          ast->if_statement.condition = va_arg(args, node*);
+          ast->if_statement.statement = va_arg(args, node*);
+          ast->if_statement.else_statement = va_arg(args, node*);
+          break;
+
+      case CONSTRUCTOR_NODE:
+          ast->constructor.type = va_arg(args, node*);
+          ast->constructor.arguments = va_arg(args, node*);
+          break;
+
+      case FUNCTION_NODE:
+          ast->function.name = va_arg(args, std::string);
+          ast->function.arguments = va_arg(args, node*);
+          break;
+
+      case ARGUMENTS_NODE:
+          ast->arguments.arguments = va_arg(args, node*);
+          ast->arguments.argument = va_arg(args, node*);
+          break;
 
   // ...
 

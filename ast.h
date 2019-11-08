@@ -26,7 +26,7 @@ typedef enum {
   SCOPE_NODE            = (1 << 0),
   
   EXPRESSION_NODE       = (1 << 2),
-  UNARY_EXPRESION_NODE  = (1 << 2) | (1 << 3),
+  UNARY_EXPRESSION_NODE = (1 << 2) | (1 << 3),
   BINARY_EXPRESSION_NODE= (1 << 2) | (1 << 4),
   INT_NODE              = (1 << 2) | (1 << 5), 
   FLOAT_NODE            = (1 << 2) | (1 << 6),
@@ -36,12 +36,16 @@ typedef enum {
   CONSTRUCTOR_NODE      = (1 << 2) | (1 << 10),
 
   STATEMENT_NODE        = (1 << 1),
+  STATEMENTS_NODE       = (1 << 1) | (1 << 15),
   IF_STATEMENT_NODE     = (1 << 1) | (1 << 11),
   WHILE_STATEMENT_NODE  = (1 << 1) | (1 << 12),
   ASSIGNMENT_NODE       = (1 << 1) | (1 << 13),
   NESTED_SCOPE_NODE     = (1 << 1) | (1 << 14),
 
-  DECLARATION_NODE      = (1 << 15)
+  DECLARATION_NODE      = (1 << 15),
+  DECLARATIONS_NODE     = (1 << 16),
+
+  ARGUMENTS_NODE        = (1 << 17),
 } node_kind;
 
 struct node_ {
@@ -73,8 +77,12 @@ struct node_ {
     } declarations;
 
     struct {
+        int type; // Refer to parser.y type tokens.
+    } type;
+
+    struct {
         bool is_const;
-        int type; // Refer to parser.y.
+        AstNode* type; // Refer to parser.y.
         std::string id;
         AstNode* expression;
     } declaration;
@@ -86,6 +94,7 @@ struct node_ {
 
     struct {
         bool is_const;
+        AstNode* type;
         std::string id;
         int index; // Dereference index, set to -1 if id is stand alone.
     } variable;
@@ -97,13 +106,13 @@ struct node_ {
     } if_statement;
 
     struct {
-        int type; // Defined as token types in parser.y.
+        AstNode* type; // Defined as token types in parser.y.
         AstNode* variable;
         AstNode* expression;
     } assignment;
 
     struct {
-        int type; // Refer to parser.y.
+        AstNode* type; // Refer to parser.y.
         AstNode* arguments;
     } constructor;
 
@@ -114,7 +123,7 @@ struct node_ {
 
     struct {
         AstNode* arguments;
-        AstNode* expression;
+        AstNode* argument;
     } arguments;
   
   };
