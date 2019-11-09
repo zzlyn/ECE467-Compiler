@@ -29,22 +29,31 @@ void yyerror(const char* s);    /* what to do in case of error            */
 int yylex();              /* procedure for calling lexical analyzer */
 extern int yyline;        /* variable holding current line number   */
 
+char* init_c_str(std::string str) {
+    char* ptr = (char*) malloc(str.length() + 1);
+    strcpy(ptr, str.c_str());
+
+    // printf("DEBUG: initializing c string %s\n", ptr);
+
+    return ptr;
+}
+
 // Translates function code to names for cleaner code.
-std::string function_code_to_name(int code) {
+char* function_code_to_name(int code) {
     if (code == 0) {
-        return "DP3";
+        return init_c_str("DP3");
     }
 
     if (code == 1) {
-        return "LIT";
+        return init_c_str("LIT");
     }
 
     if (code == 2) {
-        return "RSQ";
+        return init_c_str("RSQ");
     }
     
     // We screwed.
-    return "haha";
+    return NULL;
 }
 
 
@@ -198,7 +207,7 @@ RSQ_F
  *    1. Add code to rules for construction of AST.
  ***********************************************************************/
 program
-  :  scope                                                              { yTRACE("program -> scope"); $$=$1; }
+  :  scope                                                              { yTRACE("program -> scope"); $$=ast_allocate(PROGRAM_NODE, $1); }
   ;
 scope
   :  LSCOPE  declarations statements RSCOPE                                { yTRACE("scope -> {declarations statements} "); $$=ast_allocate(SCOPE_NODE, $2, $3); }
@@ -212,9 +221,9 @@ statements
   |  /* Epsilon */                                                      { yTRACE("statements -> epsilon"); $$=NULL; }
   ;
 declaration
-  :  type ID  SEMICOLON                                                  { yTRACE("declaration -> type ID ;"); std::string tmp($2); $$=ast_allocate(DECLARATION_NODE, 0, $1, tmp, NULL); }
-  |  type ID ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); std::string tmp($2); $$=ast_allocate(DECLARATION_NODE, 0, $1, tmp, $4); }
-  |  CONST type ID  ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); std::string tmp($3); $$=ast_allocate(DECLARATION_NODE, 1, $2, tmp, $5); }
+  :  type ID  SEMICOLON                                                  { yTRACE("declaration -> type ID ;"); $$=ast_allocate(DECLARATION_NODE, 0, $1, $2, NULL); }
+  |  type ID ASSIGN expression SEMICOLON                                { yTRACE("declaration -> type ID = expression ;"); $$=ast_allocate(DECLARATION_NODE, 0, $1, $2, $4); }
+  |  CONST type ID  ASSIGN expression SEMICOLON                          { yTRACE("declaration -> const type ID = expression ;"); $$=ast_allocate(DECLARATION_NODE, 1, $2, $3, $5); }
   ;
 statement
   :  variable ASSIGN expression SEMICOLON                               { yTRACE("statement -> variable = expression ;");  $$=ast_allocate(ASSIGNMENT_NODE, $1, $3); }
@@ -229,22 +238,22 @@ else_statement
   ;
 // Problem case we need to vid the seocnd one
 variable
-  :  ID                                                                 { yTRACE("variable -> ID"); $$=ast_allocate(VAR_NODE, 0/* is_const: Found in symbol table */, NULL/* type node: Found in symbol table*/, $1, -1); }
-  |  ID  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); $$=ast_allocate(VAR_NODE, 0, NULL, $1, $3); }
+  :  ID                                                                 { yTRACE("variable -> ID"); $$=ast_allocate(VAR_NODE, 0/* is_const: Found in symbol table */, $1, -1); }
+  |  ID  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); $$=ast_allocate(VAR_NODE, 0, $1, $3); }
   ;
 type
-  :  INT_T                                                              { yTRACE("type -> int"); $$=ast_allocate(TYPE_NODE, $1, "int"); }
-  |  FLOAT_T                                                            { yTRACE("type -> float"); $$=ast_allocate(TYPE_NODE, $1, "float"); }
-  |  BOOL_T                                                             { yTRACE("type -> bool"); $$=ast_allocate(TYPE_NODE, $1, "bool"); } 
-  |  VEC2_T                                                             { yTRACE("type -> vec2"); $$=ast_allocate(TYPE_NODE, $1, "vec2"); }
-  |  VEC3_T                                                             { yTRACE("type -> vec3"); $$=ast_allocate(TYPE_NODE, $1, "vec3"); }
-  |  VEC4_T                                                             { yTRACE("type -> vec4"); $$=ast_allocate(TYPE_NODE, $1, "vec4"); }
-  |  BVEC2_T                                                            { yTRACE("type -> bvec2"); $$=ast_allocate(TYPE_NODE, $1, "bvec2"); }
-  |  BVEC3_T                                                            { yTRACE("type -> bvec3"); $$=ast_allocate(TYPE_NODE, $1, "bvec3"); }
-  |  BVEC4_T                                                            { yTRACE("type -> bvec4"); $$=ast_allocate(TYPE_NODE, $1, "bvec4"); }
-  |  IVEC2_T                                                            { yTRACE("type -> ivec2"); $$=ast_allocate(TYPE_NODE, $1, "ivec2"); }
-  |  IVEC3_T                                                            { yTRACE("type -> ivec3"); $$=ast_allocate(TYPE_NODE, $1, "ivec3"); }
-  |  IVEC4_T                                                            { yTRACE("type -> ivec4"); $$=ast_allocate(TYPE_NODE, $1, "ivec4"); }
+  :  INT_T                                                              { yTRACE("type -> int"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("int")); }
+  |  FLOAT_T                                                            { yTRACE("type -> float"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("float")); }
+  |  BOOL_T                                                             { yTRACE("type -> bool"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("bool")); } 
+  |  VEC2_T                                                             { yTRACE("type -> vec2"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("vec2")); }
+  |  VEC3_T                                                             { yTRACE("type -> vec3"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("vec3")); }
+  |  VEC4_T                                                             { yTRACE("type -> vec4"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("vec4")); }
+  |  BVEC2_T                                                            { yTRACE("type -> bvec2"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("bvec2")); }
+  |  BVEC3_T                                                            { yTRACE("type -> bvec3"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("bvec3")); }
+  |  BVEC4_T                                                            { yTRACE("type -> bvec4"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("bvec4")); }
+  |  IVEC2_T                                                            { yTRACE("type -> ivec2"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("ivec2")); }
+  |  IVEC3_T                                                            { yTRACE("type -> ivec3"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("ivec3")); }
+  |  IVEC4_T                                                            { yTRACE("type -> ivec4"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("ivec4")); }
   ;
 expression
   :  constructor                                                        { yTRACE("expression -> constructor"); $$=$1; }

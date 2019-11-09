@@ -23,6 +23,8 @@ extern node *ast;
 typedef enum {
   UNKNOWN               = 0,
 
+  PROGRAM_NODE          = (1 << 18),
+
   SCOPE_NODE            = (1 << 0),
   
   EXPRESSION_NODE       = (1 << 2),
@@ -55,6 +57,11 @@ struct node_ {
   node_kind kind;
 
   union {
+
+    struct {
+        AstNode* scope;
+    } program;
+
     struct {
         AstNode* declarations;
         AstNode* statements;
@@ -87,13 +94,13 @@ struct node_ {
 
     struct {
         int type; // Refer to parser.y type tokens.
-        std::string to_str; // String representation.
+        char* to_str; // String representation.
     } type;
 
     struct {
         bool is_const;
         AstNode* type; // Refer to parser.y.
-        std::string id;
+        char* id;
         AstNode* expression;
     } declaration;
 
@@ -105,7 +112,7 @@ struct node_ {
     struct {
         bool is_const;
         AstNode* type;
-        std::string id;
+        char* id;
         int index; // Dereference index, set to -1 if id is stand alone.
     } variable;
 
@@ -126,13 +133,13 @@ struct node_ {
     } constructor;
 
     struct {
-        std::string name;
+        char* name;
         AstNode* arguments;
     } function;
 
     struct {
         AstNode* arguments;
-        AstNode* argument;
+        AstNode* expression;
     } arguments;
   
   };
