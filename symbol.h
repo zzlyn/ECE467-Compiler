@@ -9,6 +9,18 @@
 #ifndef SCOPE_CPP
 #define SCOPE_CPP
 
+
+class varType {
+        public :
+                int typeOfVariable;
+                bool isConst;
+                varType(int given_type, bool given_const){typeOfVariable = given_type; isConst = given_const; }
+                varType(){typeOfVariable = -1; isConst = false;}
+
+};
+
+
+
 // Call this when you enter a new scope
 extern "C"  void addScope();
 
@@ -36,7 +48,7 @@ extern "C" int  getVarType(char * varname);
 extern "C" bool  getConstType(char * varname);
 
 // Call this function to get the struct vartype
-extern "C" struct varType getVarStruct(char * varname);
+extern "C" varType getVarStruct(char * varname);
 
 
 #endif

@@ -82,7 +82,7 @@ extern "C" int getVarScope(char * varname){
 extern "C" int  varTypeMatch(char * varname, int varType){
 
 	int varibaleScope = getVarScope(varname);
-        struct varType thisVarType = symbolTable[varibaleScope][varname];
+        auto  thisVarType = symbolTable[varibaleScope][varname];
         int thisType = thisVarType.typeOfVariable;
 	if(thisType == varType){
 		return 1;
@@ -94,7 +94,7 @@ extern "C" int  varTypeMatch(char * varname, int varType){
 
 extern "C" int  getVarType(char * varname){
         int varibaleScope = getVarScope(varname);
-        struct varType thisVarType = symbolTable[varibaleScope][varname];
+        auto thisVarType = symbolTable[varibaleScope][varname];
         int thisType = thisVarType.typeOfVariable;
         return thisType;
 }
@@ -102,15 +102,15 @@ extern "C" int  getVarType(char * varname){
 
 extern "C" int  getConstType(char * varname){
         int varibaleScope = getVarScope(varname);
-        struct varType thisVarType = symbolTable[varibaleScope][varname];
+        varType thisVarType = symbolTable[varibaleScope][varname];
         bool thisConst = thisVarType.isConst;
         return thisConst;
 }
 
 
-extern "C" struct varType getVarStruct(char * varname){
+extern "C" varType getVarStruct(char * varname){
         int varibaleScope = getVarScope(varname);
-        struct varType thisVarType = symbolTable[varibaleScope][varname];
+        varType thisVarType = symbolTable[varibaleScope][varname];
         return thisVarType;
 }
 
