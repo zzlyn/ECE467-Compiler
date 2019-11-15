@@ -197,6 +197,93 @@ std::string binary_op_to_str(int op) {
 
 static int indent_count = 0;
 
+void ast_traverse_post(node *ast, NodeFunc post_call) {
+    
+    if (ast == NULL) {
+        return;
+    }
+
+    switch(ast->kind) {
+      case INT_NODE:
+          break;
+
+      case FLOAT_NODE:
+          break;
+
+      case PROGRAM_NODE:
+          ast_traverse_post(ast->program.scope, post_call);
+          break;
+
+      case SCOPE_NODE:
+          // TODO: Call enter_scope().
+          ast_traverse_post(ast->scope.declarations, post_call);
+          ast_traverse_post(ast->scope.statements, post_call);
+          break;
+
+      case DECLARATIONS_NODE:
+          ast_traverse_post(ast->declarations.declarations, post_call);
+          ast_traverse_post(ast->declarations.declaration, post_call);
+          break;
+
+      case STATEMENTS_NODE:
+          ast_traverse_post(ast->statements.statements, post_call);
+          ast_traverse_post(ast->statements.statement, post_call);
+          break;
+
+      case UNARY_EXPRESSION_NODE:
+          ast_traverse_post(ast->unary_expr.right, post_call);
+          break;
+    
+      case BINARY_EXPRESSION_NODE:
+          ast_traverse_post(ast->binary_expr.left, post_call);
+          ast_traverse_post(ast->binary_expr.right, post_call);
+          break;
+
+      case DECLARATION_NODE:
+          ast_traverse_post(ast->declaration.expression, post_call);
+          break;
+
+      case VAR_NODE:
+          ast_traverse_post(ast->variable.type, post_call);
+          break;
+
+      case TYPE_NODE:
+          break;
+
+      case IF_STATEMENT_NODE:
+          ast_traverse_post(ast->if_statement.condition, post_call);
+          ast_traverse_post(ast->if_statement.statement, post_call);
+          ast_traverse_post(ast->if_statement.else_statement, post_call);
+          break;
+
+      case ASSIGNMENT_NODE:
+          ast_traverse_post(ast->assignment.variable, post_call);
+          ast_traverse_post(ast->assignment.expression, post_call);
+          break;
+
+      case CONSTRUCTOR_NODE:
+          ast_traverse_post(ast->constructor.type, post_call);
+          ast_traverse_post(ast->constructor.arguments, post_call);
+          break;
+
+      case FUNCTION_NODE:
+          ast_traverse_post(ast->function.arguments, post_call);
+          break;
+
+      case ARGUMENTS_NODE:
+          ast_traverse_post(ast->arguments.arguments, post_call);
+          ast_traverse_post(ast->arguments.expression, post_call);
+          break;
+
+  // ...
+
+  default: break;
+  }
+    if (post_call) post_call(ast);
+    if (ast->kind == SCOPE_NODE) {/* TODO: Call exitscope(). */}
+}
+
+
 void ast_print(node *ast) {
     
     if (ast == NULL) {
