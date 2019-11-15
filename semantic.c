@@ -12,6 +12,7 @@
 #define SCALAR 3
 #define VECTOR  4
 
+
 void semantic_check_node(AstNode* node) {
     switch(node->kind) {
         case INT_NODE:
@@ -75,6 +76,10 @@ void semantic_check(AstNode* ast) {
     ast_traverse_post(ast, &semantic_check_node);
     return;
 }
+
+
+
+
 
 int typeCheck(int expectedType, int givenType){
 
@@ -169,16 +174,70 @@ int checkOpAndOperandType(int op, int operand){
 			printf("\nOperand is a vector to a operator that only takes scalar\n"); 
 			return 0;		
 		}
-		
+		return 1;
 	}
 	else{
 		printf("\nThe type of operation and operand is different\n");
 		return 0;
 	}
         return ERROR;
-
 }
 
+
+int checkBinaryOperandTypes(int loperandType, int roperandType){
+
+	int lbaseType = getBaseType(loperandType);
+        int rbaseType = getBaseType(roperandType);
+
+	if(lbaseType == rbaseType){
+
+		int lVectorType = getOperandVector(loperandType);
+                int rVectorType = getOperandVector(roperandType);
+		if(lVectorType == rVectorType && lVectorType == VECTOR){
+			return loperandType == roperandType;
+		}
+		return 1;
+	}
+	else{
+		printf("\nBase type does not match\n");
+		return 0;
+	}
+}
+
+int checkBinaryOperatorAllowance(int loperand, int operand, int roperand){
+        int lVectorType = getOperandVector(loperandType);
+        int rVectorType = getOperandVector(roperandType);
+
+	if(operand != MUL){
+		return lVectorType == rVectorType; 
+	}
+
+	return 1;
+}
+
+
+int checkVectorIndex(int indexValue, int operandType){
+
+	if (indexValue < 0){
+		printf("\nInavlid index Value\n");
+		return 0;
+	}
+
+
+	if(operandType == VEC4 || operandType == IVEC4 ||operandType == BVEC4 ){
+		return indexValue < 4;
+	}
+
+	if(operandType == VEC3 || operandType == IVEC3 ||operandType == BVEC3 ){
+                return indexValue < 3;
+        }
+
+	if(operandType == VEC2 || operandType == IVEC2 ||operandType == BVEC2 ){
+                return indexValue < 2;
+        }
+	printf("\nThese is a issue yo\n");
+	return 0;
+}
 
 
 
