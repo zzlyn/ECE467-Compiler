@@ -205,8 +205,8 @@ int checkBinaryOperandTypes(int loperandType, int roperandType){
 }
 
 int checkBinaryOperatorAllowance(int loperand, int operand, int roperand){
-        int lVectorType = getOperandVector(loperandType);
-        int rVectorType = getOperandVector(roperandType);
+        int lVectorType = getOperandVector(loperand);
+        int rVectorType = getOperandVector(roperand);
 
 	if(operand != MUL){
 		return lVectorType == rVectorType; 
@@ -224,15 +224,15 @@ int checkVectorIndex(int indexValue, int operandType){
 	}
 
 
-	if(operandType == VEC4 || operandType == IVEC4 ||operandType == BVEC4 ){
+	if(operandType == VEC4_T || operandType == IVEC4_T ||operandType == BVEC4_T ){
 		return indexValue < 4;
 	}
 
-	if(operandType == VEC3 || operandType == IVEC3 ||operandType == BVEC3 ){
+	if(operandType == VEC3_T || operandType == IVEC3_T ||operandType == BVEC3_T ){
                 return indexValue < 3;
         }
 
-	if(operandType == VEC2 || operandType == IVEC2 ||operandType == BVEC2 ){
+	if(operandType == VEC2_T || operandType == IVEC2_T ||operandType == BVEC2_T ){
                 return indexValue < 2;
         }
 	printf("\nThese is a issue yo\n");
