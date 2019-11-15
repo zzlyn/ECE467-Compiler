@@ -12,9 +12,69 @@
 #define SCALAR 3
 #define VECTOR  4
 
+void semantic_check_node(AstNode* node) {
+    switch(node->kind) {
+        case INT_NODE:
+            break;
+            
+        case FLOAT_NODE:
+            break;
 
+        case PROGRAM_NODE:
+            break;
+            
+        case SCOPE_NODE:
+            break;
 
+        case DECLARATIONS_NODE:
+            break;
 
+        case STATEMENTS_NODE:
+            break;
+
+        case UNARY_EXPRESSION_NODE:
+            break;
+
+        case BINARY_EXPRESSION_NODE:
+            break;
+
+        case DECLARATION_NODE:
+            printf("semantic_check: declaration node, inserting variable %s\n", node->declaration.id);
+            break;
+
+        case VAR_NODE:
+            printf("semantic_check: var node, looking up variable %s\n", node->variable.id);
+            break;
+
+        case TYPE_NODE:
+            break;
+
+        case IF_STATEMENT_NODE:
+            break;
+
+        case ASSIGNMENT_NODE:
+            break;
+
+        case CONSTRUCTOR_NODE:
+            break;
+
+        case FUNCTION_NODE:
+            break;
+
+        case ARGUMENTS_NODE:
+            break;
+
+        default:
+            break;
+    }
+
+    return;
+}
+
+void semantic_check(AstNode* ast) {
+    ast_traverse_post(ast, &semantic_check_node);
+    return;
+}
 
 int typeCheck(int expectedType, int givenType){
 

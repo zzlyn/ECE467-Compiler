@@ -148,7 +148,7 @@ struct node_ {
 
 typedef void(*NodeFunc)(AstNode*);
 node *ast_allocate(node_kind type, ...);
-void ast_traverse_post(NodeFunc post_call);
+void ast_traverse_post(AstNode* root, NodeFunc post_call);
 void ast_free(node *ast);
 void ast_print(node * ast);
 
