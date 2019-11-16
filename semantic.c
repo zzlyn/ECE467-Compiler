@@ -1,5 +1,5 @@
 #include "ast.h"
-
+#include "symbol.h"
 #include  "parser.tab.h"
 #include <stdlib.h>
 #include <stdio.h> 
@@ -11,6 +11,10 @@
 #define COMPARISON  2
 #define SCALAR 3
 #define VECTOR  4
+
+
+int checkVectorIndex(int indexValue, int operandType);
+int checkPredefinedVectorIndex(int indexValue, char * varname);
 
 
 void semantic_check_node(AstNode* node) {
@@ -39,12 +43,35 @@ void semantic_check_node(AstNode* node) {
         case BINARY_EXPRESSION_NODE:
             break;
 
+// Rupan Start here
         case DECLARATION_NODE:
             printf("semantic_check: declaration node, inserting variable %s\n", node->declaration.id);
             break;
 
         case VAR_NODE:
-            printf("semantic_check: var node, looking up variable %s\n", node->variable.id);
+        	printf("SWAAAAAAGGGGGGvar, id %s, index %i\n", node->variable.id, node->variable.index);
+        	printf("semantic_check: var node, looking up variable %s\n", node->variable.id);
+		if( doesVarExist(node->variable.id)){
+			if(node->variable.index != -1){
+                                AstNode * typeNode = node->variable.type;
+
+				if(predefinedVarnameCheck(node->variable.id)){
+					if(!checkPredefinedVectorIndex(node->variable.index,node->variable.id)){
+						printf("\nError incorrect Indexing\n");
+					}
+				}
+
+				else{
+					if(!checkVectorIndex(node->variable.index, typeNode->type.type)){
+                                                printf("\nError Incorrect indexing\n");
+					}
+				}
+			}
+		}
+		else{
+			printf("\nError doesn't exist yet\n");
+		}
+		printf("\nDone Checking\n");
             break;
 
         case TYPE_NODE:
@@ -239,6 +266,20 @@ int checkVectorIndex(int indexValue, int operandType){
 	return 0;
 }
 
+int checkPredefinedVectorIndex(int indexValue, char * varname){
+
+        if (indexValue < 0){
+                printf("\nInavlid indexi Value\n");
+		return 0;
+        }
+
+	if(strcmp(varname,"gl_FragDepth")){
+		return indexValue < 4;
+	}
+	else{
+		return 1;
+	}
+}
 
 
 

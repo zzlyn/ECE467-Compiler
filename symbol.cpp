@@ -20,6 +20,26 @@ class varType {
 };
 
 
+
+
+extern "C" int predefinedVarnameCheck(char * varname){
+
+	if(!strcmp(varname,"gl_FragColor") || !strcmp(varname,"gl_FragDepth") ||!strcmp(varname,"gl_FragCoord") ||!strcmp(varname,"gl_TexCoord") ){
+		return 1;
+	} 
+
+	if(!strcmp(varname,"gl_Color") || !strcmp(varname,"gl_Secondary") ||!strcmp(varname,"gl_FogFragCoord") || !strcmp(varname,"gl_Light_Half") ){
+                return 1;
+        }
+
+	if(!strcmp(varname,"gl_Light_Ambient") || !strcmp(varname,"gl_Material_Shininess") || !strcmp(varname,"env1") ||!strcmp(varname,"env2") || !strcmp(varname,"env3")){
+                return 1;
+        }
+
+	return 0;
+}
+
+
 vector<std::tr1::unordered_map<string,varType>> symbolTable;
 extern "C" int getVarScope(char * varname);
 
@@ -46,9 +66,12 @@ extern "C" void subtractScope(){
 
 // Finds out whether a varibale exists in the program
 extern "C" int doesVarExist(char * varname){
- int currScope = my_scope_count - 1;
-        int varFound  = 0;
-        while(!varFound && currScope >= 0 ){
+	if(predefinedVarnameCheck(varname)){
+		return 1;
+	}
+
+	int currScope = my_scope_count - 1;
+        if(currScope >= 0 ){
                 auto variableFound = symbolTable[currScope].find(varname);
                 if ( variableFound !=  symbolTable[currScope].end()){
                 	return 1;                        
@@ -59,6 +82,25 @@ extern "C" int doesVarExist(char * varname){
         }
 	return 0;
 }
+
+
+extern "C" int varnameCanBeDeclared(char * varname){
+	int currScope = my_scope_count - 1;
+	if(predefinedVarnameCheck(varname)){
+		return 0;
+	}
+	if(currScope >=0){
+                auto variableFound = symbolTable[currScope].find(varname);	
+		if ( variableFound !=  symbolTable[currScope].end()){
+			// Varname exists in current scope already
+                        return 0;
+                }
+		else{
+			return 1;
+		}
+	} 
+}
+
 
 
 // Returns which scope the specific varibale name is declared in   

@@ -33,7 +33,10 @@ extern "C" void addToSymbolTable(char * var_name , int given_varType , bool give
 //  Call this to check if a var exists. 
 extern "C" int doesVarExist(char * varname);
 
+//  Call this to check if a var can be declared.
+extern "C" int varnameCanBeDeclared(char * varname);
 
+extern "C" int predefinedVarnameCheck(char * varname);
 
 
 // The following functions assume the variable name exists
