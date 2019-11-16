@@ -25,12 +25,10 @@ node *ast_allocate(node_kind kind, ...) {
   
       case INT_NODE:
           ast->integer.val = va_arg(args, int);
-          //printf("int %i\n", ast->integer.val);
           break;
 
       case FLOAT_NODE:
           ast->float_num.val = va_arg(args, double);
-          //printf("float %f\n", ast->float_num.val);
           break;
 
       case PROGRAM_NODE:
@@ -40,32 +38,27 @@ node *ast_allocate(node_kind kind, ...) {
       case SCOPE_NODE:
           ast->scope.declarations = va_arg(args, node*);
           ast->scope.statements = va_arg(args, node*);
-          //printf("scope\n");
           break;
 
       case DECLARATIONS_NODE:
           ast->declarations.declarations = va_arg(args, node*);
           ast->declarations.declaration = va_arg(args, node*);
-          //printf("declarations\n");
           break;
 
       case STATEMENTS_NODE:
           ast->statements.statements = va_arg(args, node*);
           ast->statements.statement = va_arg(args, node*);
-          //printf("statements\n");
           break;
 
       case UNARY_EXPRESSION_NODE:
           ast->unary_expr.op = va_arg(args, int);
           ast->unary_expr.right = va_arg(args, node*);
-          //printf("unary_expression, op %i\n", ast->unary_expr.op);
           break;
     
       case BINARY_EXPRESSION_NODE:
           ast->binary_expr.op = va_arg(args, int);
           ast->binary_expr.left = va_arg(args, node*);
           ast->binary_expr.right = va_arg(args, node*);
-          //printf("binary_expression, op %i\n", ast->binary_expr.op);
           break;
 
       case DECLARATION_NODE:
@@ -73,51 +66,43 @@ node *ast_allocate(node_kind kind, ...) {
           ast->declaration.type = va_arg(args, node*);
           ast->declaration.id = va_arg(args, char*);
           ast->declaration.expression = va_arg(args, node*);
-          //printf("declaration, id %s\n", ast->declaration.id);
           break;
 
       case VAR_NODE:
           ast->variable.is_const = va_arg(args, int);
           ast->variable.id = va_arg(args, char*);
           ast->variable.index = va_arg(args, int);
-          printf("var, id %s, index %i\n", ast->variable.id, ast->variable.index);
           break;
 
       case TYPE_NODE:
           ast->type.type = va_arg(args, int);
           ast->type.to_str = va_arg(args, char*);
-          //printf("type, type %i, to_str %s\n", ast->type.type, ast->type.to_str);
           break;
 
       case IF_STATEMENT_NODE:
           ast->if_statement.condition = va_arg(args, node*);
           ast->if_statement.statement = va_arg(args, node*);
           ast->if_statement.else_statement = va_arg(args, node*);
-          //printf("if_statement\n");
           break;
 
       case ASSIGNMENT_NODE:
           ast->assignment.variable = va_arg(args, node*);
           ast->assignment.expression = va_arg(args, node*);
-          //printf("assignment\n");
           break;
 
       case CONSTRUCTOR_NODE:
           ast->constructor.type = va_arg(args, node*);
           ast->constructor.arguments = va_arg(args, node*);
-          //printf("constructor\n");
           break;
 
       case FUNCTION_NODE:
           ast->function.name = va_arg(args, char*);
           ast->function.arguments = va_arg(args, node*);
-          //printf("function %s\n", ast->function.name);
           break;
 
       case ARGUMENTS_NODE:
           ast->arguments.arguments = va_arg(args, node*);
           ast->arguments.expression = va_arg(args, node*);
-          //printf("arguments\n");
           break;
 
   default: break;
