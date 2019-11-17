@@ -240,12 +240,23 @@ void semantic_check_node(AstNode* node) {
 	}
 
         case ASSIGNMENT_NODE:{
+		printf("In assignment\n");
 		AstNode * variableNode = node->assignment.variable;
                 AstNode * exprNode = node->assignment.expression;
-                ExprEval ee = exprNode->if_statement.condition->ee;
-		
-		if(!doesVarExist(variableNode->variable.id)) {
+
+                ExprEval ee = exprNode->ee;
+		if(doesVarExist(variableNode->variable.id)) {
+			printf("Variable exists in ASSIGNMENT_NODE\n");
 			int varType = variableNode->type.type; 
+			int isConst = getConstType(variableNode->variable.id);
+			if(isConst == 1){
+				printf("Error : can't assign const variable\n");
+			}
+			else{
+
+
+
+			}
 
 		}
 		else{
