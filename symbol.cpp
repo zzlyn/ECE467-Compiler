@@ -156,6 +156,14 @@ extern "C" int  getVarType(char * varname){
 
 
 extern "C" int  getConstType(char * varname){
+
+        if(predefinedVarnameCheck(varname)){
+		if(!strcmp(varname,"gl_Light_Half") || !strcmp(varname,"gl_Light_Ambient") ||!strcmp(varname,"gl_Material_Shininess") ||
+		   !strcmp(varname,"env1") || !strcmp(varname,"env2") || !strcmp(varname,"env3")){
+			return 1;
+		} 
+		return 0;
+	}
         int varibaleScope = getVarScope(varname);
         varType thisVarType = symbolTable[varibaleScope][varname];
         bool thisConst = thisVarType.isConst;

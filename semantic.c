@@ -262,6 +262,7 @@ void semantic_check_node(AstNode* node) {
 		break;
 
         case ASSIGNMENT_NODE:{
+		printf("In assignment\n");
 		AstNode * variableNode = node->assignment.variable;
 		if(!doesVarExist(variableNode->variable.id)) {
 			// int varType = variableNode->type.type; 
