@@ -239,9 +239,20 @@ void semantic_check_node(AstNode* node) {
 		break;
 	}
 
-        case ASSIGNMENT_NODE:
-            break;
+        case ASSIGNMENT_NODE:{
+		AstNode * variableNode = node->assignment.variable;
+                AstNode * exprNode = node->assignment.expression;
+                ExprEval ee = exprNode->if_statement.condition->ee;
+		
+		if(!doesVarExist(variableNode->variable.id)) {
+			int varType = variableNode->type.type; 
 
+		}
+		else{
+			printf("Error: In ASSIGNMENT_NODE variable %s does not exist in symbol table.\n", variableNode->variable.id);
+		}
+		break;
+	}
         case CONSTRUCTOR_NODE: // Needs to set ExprEval.
             node->ee = typeToEE(node->constructor.type->type.type);
             break;
