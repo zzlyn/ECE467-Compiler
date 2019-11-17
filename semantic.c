@@ -231,8 +231,13 @@ void semantic_check_node(AstNode* node) {
         case TYPE_NODE:
             break;
 
-        case IF_STATEMENT_NODE:
-            break;
+        case IF_STATEMENT_NODE:{
+		ExprEval ee = node->if_statement.condition->ee;
+		if(ee.expr_type != LOGICAL){
+			printf("Error: expression in if statement is not a bool\n");
+		}
+		break;
+	}
 
         case ASSIGNMENT_NODE:
             break;
