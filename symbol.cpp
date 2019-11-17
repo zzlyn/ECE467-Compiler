@@ -5,7 +5,8 @@
 #include <iostream>
 #include <cstring>
 #include <cstdarg>
-
+#include "ast.h"
+#include "parser.tab.h"
 using namespace std;
 
 
@@ -70,14 +71,17 @@ extern "C" int doesVarExist(char * varname){
     if(predefinedVarnameCheck(varname)){
 		return 1;
 	}
-
 	int currScope = my_scope_count - 1;
-        if(currScope >= 0 ){
+        while(currScope >= 0 ){
+		printf("In while loop\n");
                 auto variableFound = symbolTable[currScope].find(varname);
+		printf("Loooking for\n");
                 if ( variableFound !=  symbolTable[currScope].end()){
+			printf("Found Variable\n");
                 	return 1;                        
                 }
                 else {
+			printf("Checking previous scope\n");
                         currScope-=1;
                 }
         }
@@ -136,6 +140,15 @@ extern "C" int  varTypeMatch(char * varname, int varType){
 
 
 extern "C" int  getVarType(char * varname){
+
+	if(predefinedVarnameCheck(varname)){
+		if(!strcmp(varname,"gl_FragDepth")){
+			return BOOL_T;
+		}	
+		return VEC4_T; 
+	}
+
+
         int varibaleScope = getVarScope(varname);
         auto thisVarType = symbolTable[varibaleScope][varname];
         int thisType = thisVarType.typeOfVariable;
