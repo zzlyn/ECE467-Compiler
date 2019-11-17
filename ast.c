@@ -76,7 +76,7 @@ node *ast_allocate(node_kind kind, ...) {
           ast->variable.is_const = va_arg(args, int);
           ast->variable.id = va_arg(args, char*);
           ast->variable.index = va_arg(args, int);
-          printf("parse var node ID %s\n", ast->variable.id);
+          printf("allocating var node ID %s at %p\n", ast->variable.id, ast);
           break;
 
       case TYPE_NODE:

@@ -66,7 +66,8 @@ extern "C" void subtractScope(){
 
 // Finds out whether a varibale exists in the program
 extern "C" int doesVarExist(char * varname){
-	if(predefinedVarnameCheck(varname)){
+	printf("hi - %s\n", varname);
+    if(predefinedVarnameCheck(varname)){
 		return 1;
 	}
 

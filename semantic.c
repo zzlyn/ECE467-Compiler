@@ -167,7 +167,7 @@ int funcNameToRetType(char* func_name) {
 
 void semantic_check_node(AstNode* node) {
     if (node == NULL) return;
-    printf("what %i %i %i\n", node->kind, PROGRAM_NODE, SCOPE_NODE);
+    
     // Initialize expr check variables.
     node->ee.has_error = false;
     node->ee.expr_type = -1;
@@ -188,19 +188,15 @@ void semantic_check_node(AstNode* node) {
             break;
 
         case PROGRAM_NODE:
-            printf("program\n");
             break;
             
         case SCOPE_NODE:
-            printf("scope\n");
             break;
 
         case DECLARATIONS_NODE:
-            printf("declarations\n");
             break;
 
         case STATEMENTS_NODE:
-            printf("statements\n");
             break;
 
         case UNARY_EXPRESSION_NODE: // Needs to set ExprEval.
@@ -213,14 +209,11 @@ void semantic_check_node(AstNode* node) {
 
 // Rupan Start here
         case DECLARATION_NODE:
-            printf("aaaa\n");
             addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const);
-            printf("nnnn\n");
             break;
 
         case VAR_NODE: {// Needs to set ExprEval.
             // LOok up on symbol table.
-            printf("var\n");
             if (!doesVarExist(node->variable.id)) {
                 printf("Error: variable %s does not exist in symbol table.", node->variable.id);
             }
@@ -230,18 +223,15 @@ void semantic_check_node(AstNode* node) {
                        }
 
         case TYPE_NODE:
-            printf("type\n");
             break;
 
         case IF_STATEMENT_NODE:
             break;
 
         case ASSIGNMENT_NODE:
-            printf("assignment\n");
             break;
 
         case CONSTRUCTOR_NODE: // Needs to set ExprEval.
-            printf("ctor\n");
             node->ee = typeToEE(node->constructor.type->type.type);
             break;
 
