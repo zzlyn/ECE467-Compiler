@@ -209,7 +209,12 @@ void semantic_check_node(AstNode* node) {
 
 // Rupan Start here
         case DECLARATION_NODE:
-            addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const);
+		if( varnameCanBeDeclared(node->declaration.id)){
+			addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const);
+		}
+		else{
+			printf("\nError redecleartion of variable %s in same scope\n",node->declaration.id);
+		}
             break;
 
         case VAR_NODE: {// Needs to set ExprEval.

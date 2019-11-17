@@ -103,7 +103,9 @@ extern "C" int varnameCanBeDeclared(char * varname){
 		else{
 			return 1;
 		}
-	} 
+	}
+	printf("Error: Scope is invalid it is %d \n", currScope); 
+	return 0;
 }
 
 
