@@ -32,6 +32,7 @@ typedef enum {
   BINARY_EXPRESSION_NODE= (1 << 2) | (1 << 4),
   INT_NODE              = (1 << 2) | (1 << 5), 
   FLOAT_NODE            = (1 << 2) | (1 << 6),
+  BOOL_NODE             = (1 << 2) | (1 << 16),
   IDENT_NODE            = (1 << 2) | (1 << 7),
   VAR_NODE              = (1 << 2) | (1 << 8),
   FUNCTION_NODE         = (1 << 2) | (1 << 9),
@@ -51,7 +52,22 @@ typedef enum {
   ARGUMENTS_NODE        = (1 << 17),
 } node_kind;
 
+#define ARITHMETIC_EXPR 0
+#define LOGICAL_EXPR 1
+
+typedef struct ExpressionEvaluation{
+    bool has_error;
+    int expr_type; // ARITHMETIC/LOGIC
+    int base_type; // INT_T/FLOAT_T/BOOL_T
+    int class_size; // 1 for SCALAR and >1 for VECTOR types.
+} ExprEval;
+
+#define ExprError (ExprEval) {.has_error = true, -1, -1}
+
 struct node_ {
+
+    // For semantic checking of expression productions.
+    ExprEval ee;
 
   // an example of tagging each node with a type
   node_kind kind;
@@ -85,6 +101,10 @@ struct node_ {
     struct {
         float val;
     } float_num;
+
+    struct {
+        bool val;
+    } boolean;
 
     // declarations, statements, variable, if_statement, assignment, constructor, arguments, function
     struct {

@@ -31,6 +31,10 @@ node *ast_allocate(node_kind kind, ...) {
           ast->float_num.val = va_arg(args, double);
           break;
 
+      case BOOL_NODE:
+          ast->boolean.val = va_arg(args, int);
+          break;
+
       case PROGRAM_NODE:
           ast->program.scope = va_arg(args, node*);
           break;
@@ -72,6 +76,7 @@ node *ast_allocate(node_kind kind, ...) {
           ast->variable.is_const = va_arg(args, int);
           ast->variable.id = va_arg(args, char*);
           ast->variable.index = va_arg(args, int);
+          printf("parse var node ID %s\n", ast->variable.id);
           break;
 
       case TYPE_NODE:
@@ -194,6 +199,9 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
 
       case FLOAT_NODE:
           break;
+    
+      case BOOL_NODE:
+          break;
 
       case PROGRAM_NODE:
           ast_traverse_post(ast->program.scope, post_call);
@@ -291,6 +299,10 @@ void ast_print(node *ast) {
 
       case FLOAT_NODE:
           fprintf(dumpFile, "%f", ast->float_num.val);
+          break;
+
+      case BOOL_NODE:
+          // print...
           break;
 
       case PROGRAM_NODE:

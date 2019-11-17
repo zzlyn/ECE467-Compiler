@@ -260,8 +260,8 @@ expression
   |  function                                                           { yTRACE("expression -> function"); $$=$1; }
   |  INT                                                                { yTRACE("expression -> integer"); $$=ast_allocate(INT_NODE, $1); }
   |  FLOAT                                                              { yTRACE("expression -> floatint point number"); double tmp = (double)$1; $$=ast_allocate(FLOAT_NODE, tmp); }
-  |  BOOL_TRUE                                                          { yTRACE("expression -> TRUE"); $$=ast_allocate(INT_NODE, 1); }
-  |  BOOL_FALSE                                                         { yTRACE("expression -> FALSE"); $$=ast_allocate(INT_NODE, 0); }
+  |  BOOL_TRUE                                                          { yTRACE("expression -> TRUE"); $$=ast_allocate(BOOL_NODE, 1); }
+  |  BOOL_FALSE                                                         { yTRACE("expression -> FALSE"); $$=ast_allocate(BOOL_NODE, 0); }
   |  variable                                                           { yTRACE("expression -> variable"); $$=$1; }
   |  MINUS expression   %prec NEGATIVE                                  { yTRACE("expression -> - expression"); $$=ast_allocate(UNARY_EXPRESSION_NODE, MINUS, $2); }
   |  NOT expression     %prec NEGATIVE                                  { yTRACE("expression -> ! expression"); $$=ast_allocate(UNARY_EXPRESSION_NODE, NOT, $2); }
