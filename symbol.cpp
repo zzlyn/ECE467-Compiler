@@ -53,7 +53,6 @@ extern "C" void addScope(){
 	my_scope_count += 1; 
 	std::tr1::unordered_map<string,varType> scopeTable;
 	symbolTable.push_back(scopeTable);
-        cout << endl << "Scope count is increased : " << my_scope_count << endl;  
 }
 
 
@@ -61,13 +60,11 @@ extern "C" void addScope(){
 extern "C" void subtractScope(){
         my_scope_count -= 1;
 	symbolTable.pop_back();
-        cout << endl << "Scope count is decreased : " << my_scope_count << endl;
 }
 
 
 // Finds out whether a varibale exists in the program
 extern "C" int doesVarExist(char * varname){
-	printf("hi - %s\n", varname);
 
 	if(varname == NULL){
 		return 0;
@@ -77,15 +74,11 @@ extern "C" int doesVarExist(char * varname){
 	}
 	int currScope = my_scope_count - 1;
         while(currScope >= 0 ){
-		printf("In while loop\n");
                 auto variableFound = symbolTable[currScope].find(varname);
-		printf("Loooking for\n");
                 if ( variableFound !=  symbolTable[currScope].end()){
-			printf("Found Variable\n");
                 	return 1;                        
                 }
                 else {
-			printf("Checking previous scope\n");
                         currScope-=1;
                 }
         }

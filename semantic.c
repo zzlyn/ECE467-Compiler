@@ -24,10 +24,15 @@ ExprEval evaluate_unary_expression(AstNode* node) {
     // unary accepts both vectors and scalars.
     int child_type = node->unary_expr.right->ee.expr_type;
     
-    if (node->unary_expr.op == MINUS && child_type != ARITHMETIC_EXPR)
+    if (node->unary_expr.op == MINUS && child_type != ARITHMETIC_EXPR) {
+        printf("Error: Expression after unary \"-\" needs to be arithmetic.\n");
         return ExprError;
-    if (node->unary_expr.op == NOT && child_type != LOGICAL_EXPR)
+    }
+
+    if (node->unary_expr.op == NOT && child_type != LOGICAL_EXPR) {
+        printf("Error: Expression after unary \"!\" needs to be logical.\n");
         return ExprError;
+    }
 
     // Type and class simply inherit from right expr.
     return (ExprEval) {.has_error = false, .expr_type = child_type, .base_type = node->unary_expr.right->ee.base_type, .class_size=node->unary_expr.right->ee.class_size};
@@ -54,11 +59,13 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Arithemtic operands also need to be arithemetic.
         if (left_ee.expr_type != ARITHMETIC ||
             right_ee.expr_type != ARITHMETIC) {
+            printf("Error: Both operands of arithmetic operator needs to be arithmetic.\n");
             return ExprError;
         }
         
         // Left & right base types need to be the same.
         if (left_ee.base_type != right_ee.base_type) {
+            printf("Error: Operands of arithmetic operator needs to be of the same base type.\n");
             return ExprError;
         }
         
@@ -67,6 +74,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Accept ss or vv;
         if (op == PLUS || op == MINUS) {
             if (left_ee.class_size != right_ee.class_size) {
+                printf("Error: Operands of \"+\" or \"-\" needs to be scalar-scalar or vectors of same size.\n");
                 return ExprError;
             }
 
@@ -84,6 +92,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
             // None of the class_sizes are 1. Means we have 2 vectors
             // and their sizes need to match in this case.
             if (left_ee.class_size != right_ee.class_size) {
+                printf("Error: Operands of \"*\" are vectors of different sizes.\n");
                 return ExprError;
             }
 
@@ -93,8 +102,10 @@ ExprEval evaluate_binary_expression(AstNode* node) {
 
         // Accept ss only.
         if (op == DIV || op == POWER) {
-            if (left_ee.class_size != 1 || right_ee.class_size != 1)
+            if (left_ee.class_size != 1 || right_ee.class_size != 1) {
+                printf("Error: Vectors are not accepted for \"/\" or \"^\".\n");
                 return ExprError;
+            }
             return (ExprEval) {false, ARITHMETIC, base_type, 1};
         }
 
@@ -105,12 +116,16 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     // Case 2: Logical and binary.
     if (op_type == LOGICAL) {
         // Must have boolean logical operands.
-        if (left_ee.expr_type != LOGICAL || right_ee.expr_type != LOGICAL)
+        if (left_ee.expr_type != LOGICAL || right_ee.expr_type != LOGICAL) {
+            printf("Error: Operands of a logical operator needs to be of logical types.\n");
             return ExprError;
+        }
 
         // ss or vv
-        if (left_ee.class_size != right_ee.class_size) 
+        if (left_ee.class_size != right_ee.class_size) {
+            printf("Error: Operands of a logical operator needs to be scalar-scalar of vectors of same size\n");
             return ExprError;
+        }
 
         return (ExprEval) {false, LOGICAL, BOOL_T, left_ee.class_size};      
     }
@@ -118,25 +133,33 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     // Case 3: Comparisons.
     if (op_type == COMPARISON) {
         // All operands must be arithmetic.
-        if (left_ee.expr_type != ARITHMETIC_EXPR || right_ee.expr_type != ARITHMETIC_EXPR)
+        if (left_ee.expr_type != ARITHMETIC_EXPR || right_ee.expr_type != ARITHMETIC_EXPR) {
+            printf("Error: Operands of a comparison operator needs to be arithmetic.\n");
             return ExprError;
+        }
         
         // Base types need to be the same.
-        if (left_ee.base_type != right_ee.base_type)
+        if (left_ee.base_type != right_ee.base_type) {
+            printf("Error: Operands of a comparison operator needs to have the same arithmetic base type.\n");
             return ExprError;
+        }
         
-        if (left_ee.class_size != right_ee.class_size)
+        if (left_ee.class_size != right_ee.class_size) {
+            printf("Error: Operands of a comparison operator needs to be scalar-scalar or vectors of same size.\n");
             return ExprError;
+        }
 
         // ss or vv accepted.
         if (op == EQ || op == NE)
-            return (ExprEval) {false, LOGICAL, left_ee.base_type, left_ee.class_size};    
+            return (ExprEval) {false, LOGICAL, BOOL_T, left_ee.class_size};    
         
         // For other operators, only ss accepted.
-        if (left_ee.class_size != 1)
+        if (left_ee.class_size != 1) {
+            printf("Error: Operands of comparison operator that is not \"==\" or \"!=\" needs to be scalar-scalar.\n");
             return ExprError;
+        }
 
-        return (ExprEval) {false, LOGICAL, left_ee.base_type, 1};
+        return (ExprEval) {false, LOGICAL, BOOL_T, 1};
     }
 
     return ExprError;
@@ -183,7 +206,7 @@ void semantic_check_node(AstNode* node) {
             node->ee = typeToEE(FLOAT_T);
             break;
 
-        case BOOL_NODE:
+        case BOOL_NODE: // Needs to set ExprEval.
             node->ee = typeToEE(BOOL_T);
             break;
 
@@ -231,22 +254,17 @@ void semantic_check_node(AstNode* node) {
         case TYPE_NODE:
             break;
 
-        case IF_STATEMENT_NODE:{
-		ExprEval ee = node->if_statement.condition->ee;
-		if(ee.expr_type != LOGICAL){
-			printf("Error: expression in if statement is not a bool\n");
-		}
+        case IF_STATEMENT_NODE:
+		// We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
+		// if(ee.expr_type != LOGICAL){
+		// 	printf("Error: expression in if statement is not a bool\n");
+		// }
 		break;
-	}
 
         case ASSIGNMENT_NODE:{
 		AstNode * variableNode = node->assignment.variable;
-                AstNode * exprNode = node->assignment.expression;
-                ExprEval ee = exprNode->if_statement.condition->ee;
-		
 		if(!doesVarExist(variableNode->variable.id)) {
-			int varType = variableNode->type.type; 
-
+			// int varType = variableNode->type.type; 
 		}
 		else{
 			printf("Error: In ASSIGNMENT_NODE variable %s does not exist in symbol table.\n", variableNode->variable.id);

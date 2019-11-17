@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "ast.h"
+#include "symbol.h"
 #include "common.h"
 #include "parser.tab.h"
 
@@ -76,7 +77,6 @@ node *ast_allocate(node_kind kind, ...) {
           ast->variable.is_const = va_arg(args, int);
           ast->variable.id = va_arg(args, char*);
           ast->variable.index = va_arg(args, int);
-          printf("allocating var node ID %s at %p\n", ast->variable.id, ast);
           break;
 
       case TYPE_NODE:
@@ -208,7 +208,7 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
           break;
 
       case SCOPE_NODE:
-          // TODO: Call enter_scope().
+          addScope();
           ast_traverse_post(ast->scope.declarations, post_call);
           ast_traverse_post(ast->scope.statements, post_call);
           break;
@@ -273,7 +273,7 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
   default: break;
   }
     if (post_call) post_call(ast);
-    if (ast->kind == SCOPE_NODE) {/* TODO: Call exitscope(). */}
+    if (ast->kind == SCOPE_NODE) { subtractScope(); }
 }
 
 
