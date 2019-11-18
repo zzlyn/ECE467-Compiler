@@ -55,7 +55,7 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
 	AstNode * node = givenNode;        
 	while(node != NULL){
 		ExprEval ee = node->arguments.expression->ee;
-                printf("Type to check is %d . Arg type is %d\n",typeToCheck,ee.base_type);
+                //printf("Type to check is %d . Arg type is %d\n",typeToCheck,ee.base_type);
 
 		if(typeToCheck != ee.base_type){
 			return 0;
@@ -71,11 +71,11 @@ int argSizeCheck(int sizeToCheck, AstNode * givenNode){
         while(node != NULL){
                 ExprEval ee = node->arguments.expression->ee;
 		int classSize = ee.class_size;
-		printf("Variable index is %d\n", node->arguments.expression->variable.index);
+		//printf("Variable index is %d\n", node->arguments.expression->variable.index);
 		if(node->arguments.expression->variable.deref){
 			classSize = 1;
 		}
-		printf("Given Size is %d. Calculated size is %d\n",sizeToCheck, classSize);
+		//printf("Given Size is %d. Calculated size is %d\n",sizeToCheck, classSize);
                 if(sizeToCheck != classSize){
                         return 0;
                 }
@@ -104,7 +104,7 @@ int numArgsConstruct(int type){
         }
 
         if(type == BOOL_T || type == FLOAT_T || type == INT_T){
-                return -1;
+                return 1;
         }
 
 	return 0;
@@ -386,7 +386,7 @@ void semantic_check_node(AstNode* node) {
         case IF_STATEMENT_NODE:
 		// We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
 		if(node->if_statement.condition->ee.expr_type != LOGICAL){
-		    ERROR("Error: expression in if statement is not a bool\n");
+		    ERROR("Error: expression in if statement is not a bool type\n");
 		}
 		break;
 
@@ -415,16 +415,28 @@ void semantic_check_node(AstNode* node) {
 		node->ee = typeToEE(node->constructor.type->type.type);
 		int numArgsGiven = getNumArgs(node->constructor.arguments);
 		int numNecessaryArgs = numArgsConstruct(node->constructor.type->type.type);
-		if(numNecessaryArgs == numArgsGiven){
+		//printf("COnstrucitng node\n");
+		if(numNecessaryArgs > 0 && numNecessaryArgs == numArgsGiven){
+
+
+			if(argTypeCheck(getBaseType(node->constructor.type->type.type), node->function.arguments)){
+
+			                        if(!argSizeCheck(1,node->function.arguments)){
+			                                ERROR("Error: Improper arguments provided to constructor\n");
+						}
+
 
 				
+			} 
 
+			else{
+				ERROR("Error: Improper arguments to constructor \n");
+			}
 		}
 
 		else{
 			ERROR("Error: Improper amount of arguments provided\n");
 		}
-
 
 
             break;}
@@ -437,51 +449,36 @@ void semantic_check_node(AstNode* node) {
 
 			int numArgs = getNumArgs(node->function.arguments);
                         if(numArgs == 1){
-
-
 				if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
 					if(!argSizeCheck(1,node->function.arguments)){
-						printf("Size check failed RSQ\n");
+						ERROR("Error: Improper arguments to function RSQ\n");
 
 					}
-
 				}
-
 				else{
 					ERROR("Error: Improper arguments to function RSQ\n");
 				}
-
-
-
-
                         }
                         else{
                                 ERROR("Error: Improper amount of arguments to function RSQ \n");
                         }
 		}
-
                else if(!strcmp(node->function.name,"DP3")){
 			int numArgs = getNumArgs(node->function.arguments);
                         if(numArgs == 2){
-
-
                                 if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
 					if(!argSizeCheck(3,node->function.arguments) && !argSizeCheck(4,node->function.arguments)){
-	                                        printf("Size check failed DP3\n");
-
+	                                        ERROR("Error: Improper arguments to function DP3\n");
 					} 
                                 }
-
                                 else{
                                         ERROR("Error: Improper arguments to function DP3\n");
                                 }
-
                         }
                         else{
                                 ERROR("Error: Improper amount of arguments to function DP3\n");
                         }
                 }
-
                else if(!strcmp(node->function.name,"LIT")){
 
 			int numArgs = getNumArgs(node->function.arguments);
@@ -489,13 +486,9 @@ void semantic_check_node(AstNode* node) {
 				if(argTypeCheck(FLOAT_T, node->function.arguments)){
 
                                         if(!argSizeCheck(4,node->function.arguments)){
-                                                printf("Size check failed LIT\n");
-
+                                                ERROR("Error: Improper arguments to function LIT\n");
 					}
-
-
 				}
-
 				else{
                                 	ERROR("Error: Improper arguments to function LIT\n");
 				}
@@ -508,8 +501,6 @@ void semantic_check_node(AstNode* node) {
 		else{
 			ERROR("Error: Invalid Function\n");
 		}
-
-
             break;
             }
 
