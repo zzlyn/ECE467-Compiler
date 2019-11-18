@@ -82,6 +82,8 @@ node *ast_allocate(node_kind kind, ...) {
       case TYPE_NODE:
           ast->type.type = va_arg(args, int);
           ast->type.to_str = va_arg(args, char*);
+                printf("Varname is %s . Type is %d\n", ast->type.to_str,ast->type.type);
+
           break;
 
       case IF_STATEMENT_NODE:
@@ -96,7 +98,10 @@ node *ast_allocate(node_kind kind, ...) {
           break;
 
       case CONSTRUCTOR_NODE:
+		printf("In CONSTRUCTOR_NODE \n");
           ast->constructor.type = va_arg(args, node*);
+                printf("Type is %d\n", ast->constructor.type->type.type);
+
           ast->constructor.arguments = va_arg(args, node*);
           break;
 

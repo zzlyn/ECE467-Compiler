@@ -194,6 +194,10 @@ extern "C" void addToSymbolTable(char * var_name , int given_varType , bool give
 			cout << endl << "ERROR : Redecleration of variable!" << endl;
 		}
 	}
+
+	else{
+		printf("Scope Count is less than zero\n");
+	}
 }
 
 

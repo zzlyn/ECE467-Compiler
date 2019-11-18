@@ -19,6 +19,51 @@ int getBaseType(int op);
 int getClassSize(int type);
 
 
+int getNumArgs(AstNode * node){
+	int count = 0;
+	while(node != NULL){
+		count = count + 1;
+		node = node->arguments.arguments;
+	}
+	return count;
+}
+
+
+int argTypeCheck(int typeToCheck, AstNode * node){
+        
+	while(node != NULL){
+		ExprEval ee = node->ee;
+		if(ee.class_size != -1 || typeToCheck == ee.base_type){
+			return 0;
+		}
+
+                node = node->arguments.arguments;
+        }
+	return 1;
+}
+
+int numArgsConstruct(int type){
+
+	if(type == BVEC4_T || type == IVEC4_T || type == VEC4_T){
+		return 4;
+	}
+
+	if(type == BVEC3_T || type == IVEC3_T || type == VEC3_T){
+                return 3;
+        }
+
+	if(type == BVEC2_T || type == IVEC2_T || type == VEC2_T){
+                return 2;
+        }
+
+        if(type == BOOL_T || type == FLOAT_T || type == INT_T){
+                return -1;
+        }
+
+	return 0;
+}
+
+
 ExprEval evaluate_unary_expression(AstNode* node) {
     // Check if op and child type match. Class does not matter since
     // unary accepts both vectors and scalars.
@@ -262,19 +307,36 @@ void semantic_check_node(AstNode* node) {
 		break;
 
         case ASSIGNMENT_NODE:{
-		printf("In assignment\n");
 		AstNode * variableNode = node->assignment.variable;
-		if(!doesVarExist(variableNode->variable.id)) {
+		if(doesVarExist(variableNode->variable.id)) {
 			// int varType = variableNode->type.type; 
 		}
 		else{
 			printf("Error: In ASSIGNMENT_NODE variable %s does not exist in symbol table.\n", variableNode->variable.id);
 		}
 		break;
+
 	}
-        case CONSTRUCTOR_NODE: // Needs to set ExprEval.
-            node->ee = typeToEE(node->constructor.type->type.type);
-            break;
+        case CONSTRUCTOR_NODE: {// Needs to set ExprEval.
+		node->ee = typeToEE(node->constructor.type->type.type);
+		int numArgsGiven = getNumArgs(node->constructor.arguments);
+		int numNecessaryArgs = numArgsConstruct(node->constructor.type->type.type);
+		printf("The type is %d\n",node->constructor.type->type.type);
+		printf("Number of given args is %d . Needed args is %d\n",numArgsGiven,numNecessaryArgs);
+		printf("VEC4 IS %d\n",VEC4_T);
+		if(numNecessaryArgs == numArgsGiven){
+
+
+
+		}
+
+		else{
+			printf("Error: Improper amount of arguments provided\n");
+		}
+
+
+
+            break;}
 
         case FUNCTION_NODE: {// Needs to set ExprEvalal.
             int func_type = funcNameToRetType(node->function.name);
