@@ -119,6 +119,66 @@ node *ast_allocate(node_kind kind, ...) {
   return ast;
 }
 
+std::string var_type_to_str(int var_type) {
+    std::string str;
+
+    switch(var_type) {
+        case INT_T:
+            str = "int";
+            break;
+
+        case FLOAT_T:
+            str = "float";
+            break;
+
+        case BOOL_T:
+            str = "bool";
+            break;
+
+        case VEC2_T:
+            str = "vec2";
+            break;
+
+        case VEC3_T:
+            str = "vec3";
+            break;
+
+        case VEC4_T:
+            str = "vec4";
+            break;
+
+        case IVEC2_T:
+            str = "ivec2";
+            break;
+
+        case IVEC3_T:
+            str = "ivec3";
+            break;
+
+        case IVEC4_T:
+            str = "ivec4";
+            break;
+
+        case BVEC2_T:
+            str = "bvec2";
+            break;
+
+        case BVEC3_T:
+            str = "bvec3";
+            break;
+
+        case BVEC4_T:
+            str = "bvec4";
+            break;
+
+        default:
+            str = "unknown";
+            break;
+    }
+
+    return str;
+}
+
 std::string binary_op_to_str(int op) {
 
     std::string str;
@@ -237,7 +297,6 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
           break;
 
       case VAR_NODE:
-          ast_traverse_post(ast->variable.type, post_call);
           break;
 
       case TYPE_NODE:
@@ -275,7 +334,6 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
     if (post_call) post_call(ast);
     if (ast->kind == SCOPE_NODE) { subtractScope(); }
 }
-
 
 void ast_print(node *ast) {
     
@@ -317,16 +375,12 @@ void ast_print(node *ast) {
           break;
 
       case DECLARATIONS_NODE:
-          //ast->declarations.declarations = va_arg(args, node*);
-          //ast->declarations.declaration = va_arg(args, node*);
           fprintf(dumpFile, "DECLARATIONS ");
           ast_print(ast->declarations.declarations);
           ast_print(ast->declarations.declaration);
           break;
 
       case STATEMENTS_NODE:
-          //ast->statements.statements = va_arg(args, node*);
-          //ast->statements.statement = va_arg(args, node*);
           fprintf(dumpFile, "STATEMENTS ");
           ast_print(ast->statements.statements);
           ast_print(ast->statements.statement);
@@ -354,10 +408,6 @@ void ast_print(node *ast) {
           break;
 
       case DECLARATION_NODE:
-          //ast->declaration.is_const = va_arg(args, int);
-          //ast->declaration.type = va_arg(args, node*);
-          //ast->declaration.id = va_arg(args, std::string);
-          //ast->declaration.expression = va_arg(args, node*);
           fprintf(dumpFile, "DECLARATION ");
           // variable_name type_name initial_value
           fprintf(dumpFile, "%s %s ", ast->declaration.id, ast->declaration.type->type.to_str);
@@ -372,7 +422,7 @@ void ast_print(node *ast) {
             fprintf(dumpFile, "%s", ast->variable.id);
           } else {
             // INDEX type id index.
-            fprintf(dumpFile, "INDEX fake_type %s %i", ast->variable.id, ast->variable.index);
+            fprintf(dumpFile, "INDEX %s %s %i", var_type_to_str(ast->variable.var_type).c_str(), ast->variable.id, ast->variable.index);
           }
           break;
 
@@ -394,10 +444,8 @@ void ast_print(node *ast) {
           break;
 
       case ASSIGNMENT_NODE:
-          //ast->assignment.variable = va_arg(args, node*);
-          //ast->assignment.expression = va_arg(args, node*);
           // ASSIGN type variable_name new_value
-          fprintf(dumpFile, "ASSIGN fake_type %s ", ast->assignment.variable->variable.id);
+          fprintf(dumpFile, "ASSIGN %s %s ", var_type_to_str(ast->assignment.variable->variable.var_type).c_str(),ast->assignment.variable->variable.id);
           ast_print(ast->assignment.expression);
           break;
 

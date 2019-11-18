@@ -241,13 +241,13 @@ void semantic_check_node(AstNode* node) {
             break;
 
         case VAR_NODE: {// Needs to set ExprEval.
-            // LOok up on symbol table.
+            // Look up on symbol table.
             if (!doesVarExist(node->variable.id)) {
                 printf("Error: variable %s does not exist in symbol table.\n", node->variable.id);
-            }
-		else{
-			node->ee = typeToEE(getVarType(node->variable.id));
-		}
+            } else {
+                node->variable.var_type = getVarType(node->variable.id);
+                node->ee = typeToEE(node->variable.var_type);
+	    	}
             break;
                        }
 

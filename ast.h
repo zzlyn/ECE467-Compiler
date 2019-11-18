@@ -131,7 +131,7 @@ struct node_ {
 
     struct {
         bool is_const;
-        AstNode* type;
+        int var_type; // Assigned during semantic check.
         char* id;
         int index; // Dereference index, set to -1 if id is stand alone.
     } variable;
