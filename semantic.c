@@ -19,6 +19,25 @@ int getBaseType(int op);
 int getClassSize(int type);
 
 
+int isReadOnly(char * varname){
+
+	if(predefinedVarnameCheck(varname)){
+		if(!strcmp(varname,"gl_FragColor") || !strcmp(varname,"gl_FragDepth")){
+			return 0;
+		}
+		return 1;
+	}
+
+	if(doesVarExist(varname)){
+		int isConst = getConstType(varname);
+		return isConst;
+	}
+
+	printf("Varname doesn't exist\n");
+	return 0;
+}
+
+
 int getNumArgs(AstNode * node){
 	int count = 0;
 	while(node != NULL){
@@ -309,6 +328,15 @@ void semantic_check_node(AstNode* node) {
         case ASSIGNMENT_NODE:{
 		AstNode * variableNode = node->assignment.variable;
 		if(doesVarExist(variableNode->variable.id)) {
+
+			if(!isReadOnly(variableNode->variable.id)){
+	
+
+			}
+			else{
+				printf("Error: Assigning const variable\n");
+			}
+
 			// int varType = variableNode->type.type; 
 		}
 		else{
