@@ -183,7 +183,7 @@ extern "C" varType getVarStruct(char * varname){
 // then the arguments. Make sure that the remaining number of arguments is atleast the number of variables you specified
 
 extern "C" void addToSymbolTable(char * var_name , int given_varType , bool given_isConst ){
-	if (my_scope_count > 0){
+    if (my_scope_count > 0){
 		auto variableFound = symbolTable[my_scope_count -1].find(var_name);
 		if (variableFound == symbolTable[my_scope_count - 1].end()){
 			varType thisVarType = varType(given_varType,given_isConst);

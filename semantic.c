@@ -52,7 +52,6 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
 	AstNode * node = givenNode;        
 	while(node != NULL){
 		ExprEval ee = node->ee;
-		printf("Checking args. Type to check is %d, arg type is %d\n", typeToCheck, ee.base_type);
 		if(ee.class_size != -1 || typeToCheck != ee.base_type){
 			return 0;
 		}
@@ -349,9 +348,6 @@ void semantic_check_node(AstNode* node) {
 		node->ee = typeToEE(node->constructor.type->type.type);
 		int numArgsGiven = getNumArgs(node->constructor.arguments);
 		int numNecessaryArgs = numArgsConstruct(node->constructor.type->type.type);
-		printf("The type is %d\n",node->constructor.type->type.type);
-		printf("Number of given args is %d . Needed args is %d\n",numArgsGiven,numNecessaryArgs);
-		printf("VEC4 IS %d\n",VEC4_T);
 		if(numNecessaryArgs == numArgsGiven){
 
 
@@ -369,7 +365,6 @@ void semantic_check_node(AstNode* node) {
         case FUNCTION_NODE: {// Needs to set ExprEvalal.
             int func_type = funcNameToRetType(node->function.name);
             node->ee = typeToEE(func_type);
-		printf("Function name is %s\n",node->function.name);
 
 		if(!strcmp(node->function.name,"RSQ")){
 
@@ -409,10 +404,8 @@ void semantic_check_node(AstNode* node) {
 
 			int numArgs = getNumArgs(node->function.arguments);
 			if(numArgs == 1){
-				printf("Num args is %d\n",numArgs);
 				if(argTypeCheck(INT_T, node->function.arguments)){
 
-					printf("Type is int\n");
 				}
 
 				else{

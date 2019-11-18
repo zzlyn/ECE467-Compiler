@@ -86,6 +86,8 @@ char* function_code_to_name(int code) {
   char* identifier;
   int function_code;
   AstNode* ast_node;
+
+  int type_code;
 }
 
 %token 
@@ -144,21 +146,21 @@ AND
 OR
 
 // Vector types.
-VOID_T
-VEC2_T
-VEC3_T
-VEC4_T
-BVEC2_T
-BVEC3_T
-BVEC4_T
-IVEC2_T
-IVEC3_T
-IVEC4_T
+%token <type_code> VOID_T
+%token <type_code> VEC2_T
+%token <type_code> VEC3_T
+%token <type_code> VEC4_T
+%token <type_code> BVEC2_T
+%token <type_code> BVEC3_T
+%token <type_code> BVEC4_T
+%token <type_code> IVEC2_T
+%token <type_code> IVEC3_T
+%token <type_code> IVEC4_T
 
 // Predefined functions.
-DP3_F
-LIT_F
-RSQ_F
+%token <function_code> DP3_F
+%token <function_code> LIT_F
+%token <function_code> RSQ_F
 
 %start    program
 

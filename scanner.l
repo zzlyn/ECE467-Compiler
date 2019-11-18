@@ -89,35 +89,35 @@ true        { yTRACE(BOOL_TRUE); yylval.boolVal = true; return BOOL_TRUE; }
 
 false       { yTRACE(BOOL_FALSE); yylval.boolVal = false; return BOOL_FALSE; }
 
-bool        { yTRACE(BOOL_T); return BOOL_T; }
+bool        { yTRACE(BOOL_T); yylval.type_code=BOOL_T; return BOOL_T; }
 
-int         { yTRACE(INT_T); return INT_T; }
+int         { yTRACE(INT_T); yylval.type_code=INT_T; return INT_T; }
 
-float       { yTRACE(FLOAT_T); return FLOAT_T; }
+float       { yTRACE(FLOAT_T); yylval.type_code=FLOAT_T; return FLOAT_T; }
 
-vec2        { yTRACE(VEC2_T); return VEC2_T; }
+vec2        { yTRACE(VEC2_T); yylval.type_code=VEC2_T; return VEC2_T; }
 
-vec3        { yTRACE(VEC3_T); return VEC3_T; }
+vec3        { yTRACE(VEC3_T); yylval.type_code=VEC3_T; return VEC3_T; }
 
-vec4        { yTRACE(VEC4_T); return VEC4_T; }
+vec4        { yTRACE(VEC4_T); yylval.type_code=VEC4_T; return VEC4_T; }
 
-bvec2        { yTRACE(BVEC2_T); return BVEC2_T; }
+bvec2        { yTRACE(BVEC2_T); yylval.type_code=BVEC2_T; return BVEC2_T; }
 
-bvec3        { yTRACE(BVEC3_T); return BVEC3_T; }
+bvec3        { yTRACE(BVEC3_T); yylval.type_code=BVEC3_T; return BVEC3_T; }
 
-bvec4        { yTRACE(BVEC4_T); return BVEC4_T; }
+bvec4        { yTRACE(BVEC4_T); yylval.type_code=BVEC4_T; return BVEC4_T; }
 
-ivec2        { yTRACE(IVEC2_T); return IVEC2_T; }
+ivec2        { yTRACE(IVEC2_T); yylval.type_code=IVEC2_T; return IVEC2_T; }
 
-ivec3        { yTRACE(IVEC3_T); return IVEC3_T; }
+ivec3        { yTRACE(IVEC3_T); yylval.type_code=IVEC3_T; return IVEC3_T; }
 
-ivec4        { yTRACE(IVEC4_T); return IVEC4_T; }
+ivec4        { yTRACE(IVEC4_T); yylval.type_code=IVEC4_T; return IVEC4_T; }
 
-dp3          { yTRACE(DP3_F); return DP3_F; }
+dp3          { yTRACE(DP3_F); yylval.function_code=DP3_F; return DP3_F; }
 
-rsq          { yTRACE(RSQ_F); return RSQ_F; }
+rsq          { yTRACE(RSQ_F); yylval.function_code=RSQ_F; return RSQ_F; }
 
-lit          { yTRACE(LIT_F); return LIT_F; }
+lit          { yTRACE(LIT_F); yylval.function_code=LIT_F; return LIT_F; }
 
 {ID_FORMAT}".".* { yERROR("Unknown token"); }
 
