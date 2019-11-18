@@ -51,9 +51,10 @@ int getNumArgs(AstNode * node){
 int argTypeCheck(int typeToCheck, AstNode * givenNode){
 	AstNode * node = givenNode;        
 	while(node != NULL){
-		ExprEval ee = node->ee;
+		ExprEval ee = node->assignment.expression->ee;
 		printf("Checking args. Type to check is %d, arg type is %d\n", typeToCheck, ee.base_type);
-		if(ee.class_size != -1 || typeToCheck != ee.base_type){
+		if( typeToCheck != ee.base_type){
+			//printf("Fail Type check\n");
 			return 0;
 		}
 
@@ -351,10 +352,10 @@ void semantic_check_node(AstNode* node) {
 		int numNecessaryArgs = numArgsConstruct(node->constructor.type->type.type);
 		printf("The type is %d\n",node->constructor.type->type.type);
 		printf("Number of given args is %d . Needed args is %d\n",numArgsGiven,numNecessaryArgs);
-		printf("VEC4 IS %d\n",VEC4_T);
+		//printf("Type IS %d\n",VEC4_T);
 		if(numNecessaryArgs == numArgsGiven){
 
-
+				
 
 		}
 
@@ -398,6 +399,15 @@ void semantic_check_node(AstNode* node) {
                else if(!strcmp(node->function.name,"DP3")){
 			int numArgs = getNumArgs(node->function.arguments);
                         if(numArgs == 2){
+
+
+                                if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
+
+                                }
+
+                                else{
+                                        printf("Error: Improper arguments to function DP3\n");
+                                }
 
                         }
                         else{
