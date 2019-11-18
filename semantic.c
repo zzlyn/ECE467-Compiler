@@ -334,7 +334,7 @@ void semantic_check_node(AstNode* node) {
 
 			}
 			else{
-				printf("Error: Assigning const variable\n");
+				printf("Error: Assigning a value to a read-only variable\n");
 			}
 
 			// int varType = variableNode->type.type; 
