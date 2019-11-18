@@ -350,7 +350,7 @@ void semantic_check_node(AstNode* node) {
 		int numNecessaryArgs = numArgsConstruct(node->constructor.type->type.type);
 		if(numNecessaryArgs == numArgsGiven){
 
-
+				
 
 		}
 
@@ -393,6 +393,15 @@ void semantic_check_node(AstNode* node) {
                else if(!strcmp(node->function.name,"DP3")){
 			int numArgs = getNumArgs(node->function.arguments);
                         if(numArgs == 2){
+
+
+                                if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
+
+                                }
+
+                                else{
+                                        printf("Error: Improper arguments to function DP3\n");
+                                }
 
                         }
                         else{
