@@ -39,6 +39,8 @@ int isReadOnly(char * varname){
 }
 
 
+
+
 int getNumArgs(AstNode * node){
 	int count = 0;
 	while(node != NULL){
@@ -52,8 +54,10 @@ int getNumArgs(AstNode * node){
 int argTypeCheck(int typeToCheck, AstNode * givenNode){
 	AstNode * node = givenNode;        
 	while(node != NULL){
-		ExprEval ee = node->ee;
-		if(ee.class_size != -1 || typeToCheck != ee.base_type){
+		ExprEval ee = node->arguments.expression->ee;
+                printf("Type to check is %d . Arg type is %d\n",typeToCheck,ee.base_type);
+
+		if(typeToCheck != ee.base_type){
 			return 0;
 		}
 
@@ -61,6 +65,29 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
         }
 	return 1;
 }
+
+int argSizeCheck(int sizeToCheck, AstNode * givenNode){
+        AstNode * node = givenNode;
+        while(node != NULL){
+                ExprEval ee = node->arguments.expression->ee;
+		int classSize = ee.class_size;
+		printf("Variable index is %d\n", node->arguments.expression->variable.index);
+		if(node->arguments.expression->variable.deref){
+			classSize = 1;
+		}
+		printf("Given Size is %d. Calculated size is %d\n",sizeToCheck, classSize);
+                if(sizeToCheck != classSize){
+                        return 0;
+                }
+
+                node = node->arguments.arguments;
+        }
+        return 1;
+}
+
+
+
+
 
 int numArgsConstruct(int type){
 
@@ -410,7 +437,10 @@ void semantic_check_node(AstNode* node) {
 
 
 				if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
+					if(!argSizeCheck(1,node->function.arguments)){
+						printf("Size check failed RSQ\n");
 
+					}
 
 				}
 
@@ -433,7 +463,10 @@ void semantic_check_node(AstNode* node) {
 
 
                                 if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
+					if(!argSizeCheck(3,node->function.arguments) && !argSizeCheck(4,node->function.arguments)){
+	                                        printf("Size check failed DP3\n");
 
+					} 
                                 }
 
                                 else{
@@ -450,7 +483,13 @@ void semantic_check_node(AstNode* node) {
 
 			int numArgs = getNumArgs(node->function.arguments);
 			if(numArgs == 1){
-				if(argTypeCheck(INT_T, node->function.arguments)){
+				if(argTypeCheck(FLOAT_T, node->function.arguments)){
+
+                                        if(!argSizeCheck(4,node->function.arguments)){
+                                                printf("Size check failed LIT\n");
+
+					}
+
 
 				}
 

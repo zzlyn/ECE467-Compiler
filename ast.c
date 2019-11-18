@@ -77,6 +77,9 @@ node *ast_allocate(node_kind kind, ...) {
           ast->variable.is_const = va_arg(args, int);
           ast->variable.id = va_arg(args, char*);
           ast->variable.index = va_arg(args, int);
+          ast->variable.deref = va_arg(args, int);
+
+
           break;
 
       case TYPE_NODE:

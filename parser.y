@@ -240,8 +240,8 @@ else_statement
   ;
 // Problem case we need to vid the seocnd one
 variable
-  :  ID                                                                 { yTRACE("variable -> ID"); $$=ast_allocate(VAR_NODE, 0/* is_const: Found in symbol table */, $1, 0); }
-  |  ID  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); $$=ast_allocate(VAR_NODE, 0, $1, $3); }
+  :  ID                                                                 { yTRACE("variable -> ID"); $$=ast_allocate(VAR_NODE, 0/* is_const: Found in symbol table */, $1, 0,0); }
+  |  ID  LSQBRAC INT RSQBRAC                                             { yTRACE("variable -> ID[integer]"); $$=ast_allocate(VAR_NODE, 0, $1, $3,1); }
   ;
 type
   :  INT_T                                                              { yTRACE("type -> int"); $$=ast_allocate(TYPE_NODE, $1, init_c_str("int")); }
