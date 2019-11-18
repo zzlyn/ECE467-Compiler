@@ -355,7 +355,8 @@ void semantic_check_node(AstNode* node) {
 // Rupan Start here
         case DECLARATION_NODE:
 		if( varnameCanBeDeclared(node->declaration.id)){
-			addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const);
+            bool initiated = (AstNode*)node->declaration.expression != (AstNode*)NULL;
+			addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const, initiated);
 		}
 		else{
 			ERROR("\nError redecleartion of variable %s in same scope\n",node->declaration.id);
@@ -394,7 +395,9 @@ void semantic_check_node(AstNode* node) {
 		if(doesVarExist(variableNode->variable.id)) {
 
 			if(!isReadOnly(variableNode->variable.id)){
-
+                // Set initiated to true.
+                printf("a: %s\n", variableNode->variable.id);
+                set_initiated(variableNode->variable.id);
 			}
 			else{
 				ERROR("Error: Assigning a value to a read-only variable\n");

@@ -15,8 +15,9 @@ class varType {
 	public :  
 		int typeOfVariable;
 		bool isConst;
-        	varType(int given_type, bool given_const){typeOfVariable = given_type; isConst = given_const; }
-                varType(){typeOfVariable = -1; isConst = false;}
+        bool initiated;
+        	varType(int given_type, bool given_const, bool initiated){typeOfVariable = given_type; isConst = given_const; initiated = initiated;}
+                varType(){typeOfVariable = -1; isConst = false; initiated = false;}
 
 };
 
@@ -171,6 +172,13 @@ extern "C" int  getConstType(char * varname){
 }
 
 
+extern "C" void set_initiated(char* varname) {
+    if (predefinedVarnameCheck(varname))
+        return;
+    int variableScope = getVarScope(varname);
+    symbolTable[variableScope][varname].initiated = true;
+}
+
 extern "C" varType getVarStruct(char * varname){
         int varibaleScope = getVarScope(varname);
         varType thisVarType = symbolTable[varibaleScope][varname];
@@ -182,11 +190,11 @@ extern "C" varType getVarStruct(char * varname){
 // Provide varibale name first and all the types after. Can take more than one. Fomrat for variable argument list. Number of arguments you want to look at
 // then the arguments. Make sure that the remaining number of arguments is atleast the number of variables you specified
 
-extern "C" void addToSymbolTable(char * var_name , int given_varType , bool given_isConst ){
+extern "C" void addToSymbolTable(char * var_name , int given_varType , bool given_isConst , bool initiated){
     if (my_scope_count > 0){
 		auto variableFound = symbolTable[my_scope_count -1].find(var_name);
 		if (variableFound == symbolTable[my_scope_count - 1].end()){
-			varType thisVarType = varType(given_varType,given_isConst);
+			varType thisVarType = varType(given_varType,given_isConst,initiated);
                         symbolTable[my_scope_count - 1][var_name] = thisVarType; 
 
 		} 

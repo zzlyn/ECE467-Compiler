@@ -14,6 +14,7 @@ class varType {
         public :
                 int typeOfVariable;
                 bool isConst;
+                bool initiated;
                 varType(int given_type, bool given_const){typeOfVariable = given_type; isConst = given_const; }
                 varType(){typeOfVariable = -1; isConst = false;}
 
@@ -27,8 +28,10 @@ extern "C"  void addScope();
 // Call this when you exit a scope
 extern "C"  void subtractScope();
 
+extern "C" void set_initiated(char* var_name);
+
 // Call this when you add a new symbol. Arguments are variable name and types. Types are integers
-extern "C" void addToSymbolTable(char * var_name , int given_varType , bool given_isConst );
+extern "C" void addToSymbolTable(char * var_name , int given_varType , bool given_isConst , bool initiated);
 
 //  Call this to check if a var exists. 
 extern "C" int doesVarExist(char * varname);
