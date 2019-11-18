@@ -245,8 +245,6 @@ std::string binary_op_to_str(int op) {
     return str;
 }
 
-static int indent_count = 0;
-
 void ast_traverse_post(node *ast, NodeFunc post_call) {
     
     if (ast == NULL) {
@@ -335,132 +333,167 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
     if (ast->kind == SCOPE_NODE) { subtractScope(); }
 }
 
+static int indentation = 0;
+
+void print_indentation() {
+    for(int i = 0; i < indentation; i++)
+        PRINT_DUMP("\t");
+}
+
+#define PRINT_DUMP(...) PRINT_DUMP(__VA_ARGS__);
+
 void ast_print(node *ast) {
     
     if (ast == NULL) {
         return;
     }
 
-    indent_count++;
-
-    // Print indentation.
-    fprintf(dumpFile, "\n");
-    for (int i = 0; i < indent_count; i++) {
-        fprintf(dumpFile, "  ");
-    }
-    fprintf(dumpFile, "(");
-
     switch(ast->kind) {
       case INT_NODE:
-          fprintf(dumpFile, "%i", ast->integer.val);
+          PRINT_DUMP("%i", ast->integer.val);
           break;
 
       case FLOAT_NODE:
-          fprintf(dumpFile, "%f", ast->float_num.val);
+          PRINT_DUMP("%f", ast->float_num.val);
           break;
 
       case BOOL_NODE:
-          // print...
+          if (node->boolean.val) {
+            PRINT_DUMP("true");
+          } else {
+            PRINT_DUMP("false");
+          }
           break;
 
       case PROGRAM_NODE:
-          fprintf(dumpFile, "PROGRAM ");
+          PRINT_DUMP("(PROGRAM \n");
+          indentation++;
           ast_print(ast->program.scope);
+          indentation--;
+          PRINT_DUMP("\n)");
           break;
 
       case SCOPE_NODE:
-          fprintf(dumpFile, "SCOPE ");
+          print_indentation();
+          PRINT_DUMP("(SCOPE \n");
+
+          indentation++;
+
           ast_print(ast->scope.declarations);
           ast_print(ast->scope.statements);
+          
+          indentation--;
+          
+          print_indentation();
+          PRINT_DUMP("\n)");
           break;
 
       case DECLARATIONS_NODE:
-          fprintf(dumpFile, "DECLARATIONS ");
+          print_indentation();
+          PRINT_DUMP("(DECLARATIONS \n");
+          
           ast_print(ast->declarations.declarations);
           ast_print(ast->declarations.declaration);
+          
+          print_indentation();
+          PRINT_DUMP("\n)");
           break;
 
       case STATEMENTS_NODE:
-          fprintf(dumpFile, "STATEMENTS ");
+          print_indentation();
+          PRINT_DUMP("(STATEMENTS \n");
+          
           ast_print(ast->statements.statements);
           ast_print(ast->statements.statement);
+          
+          print_indentation();
+          PRINT_DUMP("\n)");
           break;
 
       case UNARY_EXPRESSION_NODE: {
-          //ast->unary_expr.op = va_arg(args, int);
-          //ast->unary_expr.right = va_arg(args, node*);
-          fprintf(dumpFile, "UNARY ");
-          // TODO: Type missing.
+          print_indentation();
+          PRINT_DUMP("(UNARY ");
+          
+          std::string type = ast->unary_expr.op == MINUS ? "ARITHMETIC" : "LOGICAL";
           std::string symbol = ast->unary_expr.op == MINUS ? "- " : "! ";
-          fprintf(dumpFile, "%s", symbol.c_str());
+
+          PRINT_DUMP("%s %s", type.c_str(), symbol.c_str());
           ast_print(ast->unary_expr.right);
+          PRINT_DUMP(")\n");
           break;
                                   }
     
-      case BINARY_EXPRESSION_NODE:
-          // TODO: Result type missing.
-          fprintf(dumpFile, "BINARY ");
+      case BINARY_EXPRESSION_NODE: {
+          print_indentation();
+          PRINT_DUMP("(BINARY ");
+          // Print type.
+          int t = ast->binary_expr.op;
+          if (t == PLUS || t == MINUS || t == MUL || t == DIV || t == POWER) {
+            PRINT_DUMP("ARITHMETIC ");
+          } else {
+            PRINT_DUMP("LOGICAL ");
+          }
           // Print operation.
-          fprintf(dumpFile, "%s", binary_op_to_str(ast->binary_expr.op).c_str());
+          PRINT_DUMP("%s ", binary_op_to_str(t).c_str());
           // Print left and right.
           ast_print(ast->binary_expr.left);
           ast_print(ast->binary_expr.right);
+
+          PRINT_DUMP(")\n");
           break;
+                                   }
 
       case DECLARATION_NODE:
-          fprintf(dumpFile, "DECLARATION ");
+          print_indentation()
+          PRINT_DUMP("(DECLARATION ");
           // variable_name type_name initial_value
-          fprintf(dumpFile, "%s %s ", ast->declaration.id, ast->declaration.type->type.to_str);
+          PRINT_DUMP("%s %s ", ast->declaration.id, ast->declaration.type->type.to_str);
           ast_print(ast->declaration.expression);
+          PRINT_DUMP(")\n");
           break;
 
       case VAR_NODE:
-          //ast->variable.is_const = va_arg(args, int);
-          //ast->variable.id = va_arg(args, std::string);
-          //ast->variable.index = va_arg(args, int);
-          if (ast->variable.index == -1) {
-            fprintf(dumpFile, "%s", ast->variable.id);
+          if (!ast->variable.deref) {
+            PRINT_DUMP("%s", ast->variable.id);
           } else {
             // INDEX type id index.
-            fprintf(dumpFile, "INDEX %s %s %i", var_type_to_str(ast->variable.var_type).c_str(), ast->variable.id, ast->variable.index);
+            PRINT_DUMP("(INDEX %s %s %i)", var_type_to_str(ast->variable.var_type).c_str(), ast->variable.id, ast->variable.index);
           }
           break;
 
       case TYPE_NODE:
-          //ast->type.type = va_arg(args, int);
-          //ast->type.to_str = va_arg(args, std::string);
-          fprintf(dumpFile, "TYPE %s", ast->type.to_str);
           break;
 
       case IF_STATEMENT_NODE:
-          //ast->if_statement.condition = va_arg(args, node*);
-          //ast->if_statement.statement = va_arg(args, node*);
-          //ast->if_statement.else_statement = va_arg(args, node*);
           // IF COND THEN_STATEMENT ELSE_STATEMENT
-          fprintf(dumpFile, "IF ");
+          print_indentation();
+          PRINT_DUMP("(IF ");
           ast_print(ast->if_statement.condition);
           ast_print(ast->if_statement.statement);
           ast_print(ast->if_statement.else_statement);
+          PRINT_DUMP(")\n");
           break;
 
       case ASSIGNMENT_NODE:
           // ASSIGN type variable_name new_value
-          fprintf(dumpFile, "ASSIGN %s %s ", var_type_to_str(ast->assignment.variable->variable.var_type).c_str(),ast->assignment.variable->variable.id);
+          print_indentation();
+          PRINT_DUMP("(ASSIGN %s %s ", var_type_to_str(ast->assignment.variable->variable.var_type).c_str(),ast->assignment.variable->variable.id);
           ast_print(ast->assignment.expression);
+          PRINT_DUMP(")\n");
           break;
 
       case CONSTRUCTOR_NODE:
-          //ast->constructor.type = va_arg(args, node*);
-          //ast->constructor.arguments = va_arg(args, node*);
-          fprintf(dumpFile, "CALL %s ", ast->constructor.type->type.to_str);
+          print_indentation();
+          PRINT_DUMP("(CALL %s ", ast->constructor.type->type.to_str);
           ast_print(ast->constructor.arguments);
+          PRINT_DUMP(")\n");
           break;
 
       case FUNCTION_NODE:
-          //ast->function.name = va_arg(args, std::string);
-          //ast->function.arguments = va_arg(args, node*);
-          fprintf(dumpFile, "CALL %s ", ast->function.name);
+          print_indentation();
+          PRINT_DUMP("(CALL %s ", ast->function.name);
           ast_print(ast->function.arguments);
+          PRINT_DUMP(")\n");
           break;
 
       case ARGUMENTS_NODE:
@@ -471,16 +504,9 @@ void ast_print(node *ast) {
 
   default: break;
   }
-
-    // Print exit indentation.
-    printf("\n");
-    for (int i = 0; i<indent_count; i++) {
-        printf("  ");
-    }
-    printf(")\n");
-
-    indent_count--;
-
+    for (int i = 0; i < indentation; i++)
+        PRINT_DUMP("\t");
+    PRINT_DUMP(")");
 }
 
 void ast_free(node *ast) {

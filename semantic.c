@@ -11,7 +11,7 @@
 #define SCALAR 3
 #define VECTOR  4
 
-#define ERROR(fmt, ...) fprintf(errorFile, fmt, ##__VA_ARGS__); errorOccurred = 1;
+#define ERROR(...) fprintf(errorFile, __VA_ARGS__); errorOccurred = 1;
 
 int checkVectorIndex(int indexValue, int operandType);
 int checkPredefinedVectorIndex(int indexValue, char * varname);
