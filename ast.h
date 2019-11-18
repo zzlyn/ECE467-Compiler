@@ -134,6 +134,7 @@ struct node_ {
         int var_type; // Assigned during semantic check.
         char* id;
         int index; // Dereference index, set to 0 if id is stand alone.
+	bool deref;
     } variable;
 
     struct {
