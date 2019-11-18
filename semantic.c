@@ -48,11 +48,12 @@ int getNumArgs(AstNode * node){
 }
 
 
-int argTypeCheck(int typeToCheck, AstNode * node){
-        
+int argTypeCheck(int typeToCheck, AstNode * givenNode){
+	AstNode * node = givenNode;        
 	while(node != NULL){
 		ExprEval ee = node->ee;
-		if(ee.class_size != -1 || typeToCheck == ee.base_type){
+		printf("Checking args. Type to check is %d, arg type is %d\n", typeToCheck, ee.base_type);
+		if(ee.class_size != -1 || typeToCheck != ee.base_type){
 			return 0;
 		}
 
@@ -330,7 +331,6 @@ void semantic_check_node(AstNode* node) {
 		if(doesVarExist(variableNode->variable.id)) {
 
 			if(!isReadOnly(variableNode->variable.id)){
-	
 
 			}
 			else{
@@ -369,8 +369,68 @@ void semantic_check_node(AstNode* node) {
         case FUNCTION_NODE: {// Needs to set ExprEvalal.
             int func_type = funcNameToRetType(node->function.name);
             node->ee = typeToEE(func_type);
+		printf("Function name is %s\n",node->function.name);
+
+		if(!strcmp(node->function.name,"RSQ")){
+
+			int numArgs = getNumArgs(node->function.arguments);
+                        if(numArgs == 1){
+
+
+				if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
+
+
+				}
+
+				else{
+					printf("Error: Improper arguments to function RSQ\n");
+				}
+
+
+
+
+                        }
+                        else{
+                                printf("Error: Improper amount of arguments to function RSQ \n");
+                        }
+		}
+
+               else if(!strcmp(node->function.name,"DP3")){
+			int numArgs = getNumArgs(node->function.arguments);
+                        if(numArgs == 2){
+
+                        }
+                        else{
+                                printf("Error: Improper amount of arguments to function DP3\n");
+                        }
+                }
+
+               else if(!strcmp(node->function.name,"LIT")){
+
+			int numArgs = getNumArgs(node->function.arguments);
+			if(numArgs == 1){
+				printf("Num args is %d\n",numArgs);
+				if(argTypeCheck(INT_T, node->function.arguments)){
+
+					printf("Type is int\n");
+				}
+
+				else{
+                                	printf("Error: Improper arguments to function LIT\n");
+				}
+			}
+			else{
+				printf("Error: Improper amount of arguments to function LIT \n");
+			}
+                }
+
+		else{
+			printf("Error: Invalid Function\n");
+		}
+
+
             break;
-                            }
+            }
 
         case ARGUMENTS_NODE:
             break;
