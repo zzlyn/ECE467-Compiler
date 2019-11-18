@@ -483,6 +483,94 @@ void ast_print(node *ast) {
 
 }
 
-void ast_free(node * ast) {
+void ast_free(node *ast) {
+    
+    if (ast == NULL) {
+        return;
+    }
 
+    switch(ast->kind) {
+      case INT_NODE:
+          break;
+
+      case FLOAT_NODE:
+          break;
+    
+      case BOOL_NODE:
+          break;
+
+      case PROGRAM_NODE:
+          ast_free(ast->program.scope);
+          break;
+
+      case SCOPE_NODE:
+          ast_free(ast->scope.declarations);
+          ast_free(ast->scope.statements);
+          break;
+
+      case DECLARATIONS_NODE:
+          ast_free(ast->declarations.declarations);
+          ast_free(ast->declarations.declaration);
+          break;
+
+      case STATEMENTS_NODE:
+          ast_free(ast->statements.statements);
+          ast_free(ast->statements.statement);
+          break;
+
+      case UNARY_EXPRESSION_NODE:
+          ast_free(ast->unary_expr.right);
+          break;
+    
+      case BINARY_EXPRESSION_NODE:
+          ast_free(ast->binary_expr.left);
+          ast_free(ast->binary_expr.right);
+          break;
+
+      case DECLARATION_NODE:
+          ast_free(ast->declaration.type);
+          free(ast->declaration.id);
+          ast_free(ast->declaration.expression);
+          break;
+
+      case VAR_NODE:
+          free(ast->variable.id);
+          break;
+
+      case TYPE_NODE:
+          free(ast->type.to_str);
+          break;
+
+      case IF_STATEMENT_NODE:
+          ast_free(ast->if_statement.condition);
+          ast_free(ast->if_statement.statement);
+          ast_free(ast->if_statement.else_statement);
+          break;
+
+      case ASSIGNMENT_NODE:
+          ast_free(ast->assignment.variable);
+          ast_free(ast->assignment.expression);
+          break;
+
+      case CONSTRUCTOR_NODE:
+          ast_free(ast->constructor.type);
+          ast_free(ast->constructor.arguments);
+          break;
+
+      case FUNCTION_NODE:
+          free(ast->function.name);
+          ast_free(ast->function.arguments);
+          break;
+
+      case ARGUMENTS_NODE:
+          ast_free(ast->arguments.arguments);
+          ast_free(ast->arguments.expression);
+          break;
+
+  // ...
+
+  default: break;
+  }
+    free(ast);
 }
+

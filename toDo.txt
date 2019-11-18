@@ -1,7 +1,6 @@
 
 
 WALTER
-AST FREE
 AST PRINT
 vector indexing
 error printing to file
