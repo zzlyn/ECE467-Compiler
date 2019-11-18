@@ -1,16 +1,17 @@
 #include "ast.h"
 #include "symbol.h"
 #include  "parser.tab.h"
+#include "common.h"
 #include <stdlib.h>
 #include <stdio.h> 
 
-
-#define ERROR  -1
 #define ARITHMETIC  0
 #define LOGICAL  1
 #define COMPARISON  2
 #define SCALAR 3
 #define VECTOR  4
+
+#define ERROR(fmt, ...) fprintf(errorFile, fmt, ##__VA_ARGS__); errorOccurred = 1;
 
 int checkVectorIndex(int indexValue, int operandType);
 int checkPredefinedVectorIndex(int indexValue, char * varname);
@@ -33,7 +34,7 @@ int isReadOnly(char * varname){
 		return isConst;
 	}
 
-	printf("Varname doesn't exist\n");
+	ERROR("Varname doesn't exist\n");
 	return 0;
 }
 
@@ -89,12 +90,12 @@ ExprEval evaluate_unary_expression(AstNode* node) {
     int child_type = node->unary_expr.right->ee.expr_type;
     
     if (node->unary_expr.op == MINUS && child_type != ARITHMETIC_EXPR) {
-        printf("Error: Expression after unary \"-\" needs to be arithmetic.\n");
+        ERROR("Error: Expression after unary \"-\" needs to be arithmetic.\n");
         return ExprError;
     }
 
     if (node->unary_expr.op == NOT && child_type != LOGICAL_EXPR) {
-        printf("Error: Expression after unary \"!\" needs to be logical.\n");
+        ERROR("Error: Expression after unary \"!\" needs to be logical.\n");
         return ExprError;
     }
 
@@ -123,13 +124,13 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Arithemtic operands also need to be arithemetic.
         if (left_ee.expr_type != ARITHMETIC ||
             right_ee.expr_type != ARITHMETIC) {
-            printf("Error: Both operands of arithmetic operator needs to be arithmetic.\n");
+            ERROR("Error: Both operands of arithmetic operator needs to be arithmetic.\n");
             return ExprError;
         }
         
         // Left & right base types need to be the same.
         if (left_ee.base_type != right_ee.base_type) {
-            printf("Error: Operands of arithmetic operator needs to be of the same base type.\n");
+            ERROR("Error: Operands of arithmetic operator needs to be of the same base type.\n");
             return ExprError;
         }
         
@@ -138,7 +139,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Accept ss or vv;
         if (op == PLUS || op == MINUS) {
             if (left_ee.class_size != right_ee.class_size) {
-                printf("Error: Operands of \"+\" or \"-\" needs to be scalar-scalar or vectors of same size.\n");
+                ERROR("Error: Operands of \"+\" or \"-\" needs to be scalar-scalar or vectors of same size.\n");
                 return ExprError;
             }
 
@@ -156,7 +157,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
             // None of the class_sizes are 1. Means we have 2 vectors
             // and their sizes need to match in this case.
             if (left_ee.class_size != right_ee.class_size) {
-                printf("Error: Operands of \"*\" are vectors of different sizes.\n");
+                ERROR("Error: Operands of \"*\" are vectors of different sizes.\n");
                 return ExprError;
             }
 
@@ -167,7 +168,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Accept ss only.
         if (op == DIV || op == POWER) {
             if (left_ee.class_size != 1 || right_ee.class_size != 1) {
-                printf("Error: Vectors are not accepted for \"/\" or \"^\".\n");
+                ERROR("Error: Vectors are not accepted for \"/\" or \"^\".\n");
                 return ExprError;
             }
             return (ExprEval) {false, ARITHMETIC, base_type, 1};
@@ -181,13 +182,13 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     if (op_type == LOGICAL) {
         // Must have boolean logical operands.
         if (left_ee.expr_type != LOGICAL || right_ee.expr_type != LOGICAL) {
-            printf("Error: Operands of a logical operator needs to be of logical types.\n");
+            ERROR("Error: Operands of a logical operator needs to be of logical types.\n");
             return ExprError;
         }
 
         // ss or vv
         if (left_ee.class_size != right_ee.class_size) {
-            printf("Error: Operands of a logical operator needs to be scalar-scalar of vectors of same size\n");
+            ERROR("Error: Operands of a logical operator needs to be scalar-scalar of vectors of same size\n");
             return ExprError;
         }
 
@@ -198,18 +199,18 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     if (op_type == COMPARISON) {
         // All operands must be arithmetic.
         if (left_ee.expr_type != ARITHMETIC_EXPR || right_ee.expr_type != ARITHMETIC_EXPR) {
-            printf("Error: Operands of a comparison operator needs to be arithmetic.\n");
+            ERROR("Error: Operands of a comparison operator needs to be arithmetic.\n");
             return ExprError;
         }
         
         // Base types need to be the same.
         if (left_ee.base_type != right_ee.base_type) {
-            printf("Error: Operands of a comparison operator needs to have the same arithmetic base type.\n");
+            ERROR("Error: Operands of a comparison operator needs to have the same arithmetic base type.\n");
             return ExprError;
         }
         
         if (left_ee.class_size != right_ee.class_size) {
-            printf("Error: Operands of a comparison operator needs to be scalar-scalar or vectors of same size.\n");
+            ERROR("Error: Operands of a comparison operator needs to be scalar-scalar or vectors of same size.\n");
             return ExprError;
         }
 
@@ -219,7 +220,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         
         // For other operators, only ss accepted.
         if (left_ee.class_size != 1) {
-            printf("Error: Operands of comparison operator that is not \"==\" or \"!=\" needs to be scalar-scalar.\n");
+            ERROR("Error: Operands of comparison operator that is not \"==\" or \"!=\" needs to be scalar-scalar.\n");
             return ExprError;
         }
 
@@ -250,6 +251,36 @@ int funcNameToRetType(char* func_name) {
         return VEC4_T;
 
     return -1; // Error.
+}
+
+bool IsVector(int t) {
+    return t == VEC2_T || t == VEC3_T || t == VEC4_T ||
+           t == IVEC2_T || t == IVEC3_T || t == IVEC4_T ||
+           t == BVEC2_T || t == BVEC3_T || t == BVEC4_T;
+}
+
+void CheckVectorIndex(int type_code, int index) {
+    if (index < 0) {
+        ERROR("Error: Index can not be < 0.\n");
+        return;
+    }
+
+    int bound;
+
+    if (type_code == VEC2_T || type_code == IVEC2_T || type_code == BVEC2_T)
+        bound = 2;
+    
+    if (type_code == VEC3_T || type_code == IVEC3_T || type_code == BVEC3_T)
+        bound = 3;
+
+    if (type_code == VEC4_T || type_code == IVEC4_T || type_code == BVEC4_T)
+        bound = 4;
+
+    // Pass.
+    if (index < bound)
+        return;
+
+    ERROR("Error: Index out of bound: %i\n", index);
 }
 
 void semantic_check_node(AstNode* node) {
@@ -300,18 +331,24 @@ void semantic_check_node(AstNode* node) {
 			addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const);
 		}
 		else{
-			printf("\nError redecleartion of variable %s in same scope\n",node->declaration.id);
+			ERROR("\nError redecleartion of variable %s in same scope\n",node->declaration.id);
 		}
             break;
 
         case VAR_NODE: {// Needs to set ExprEval.
-            // Look up on symbol table.
+            // Check 1: Variable exists on symbol table, fetch its type and populate ExprEval.
             if (!doesVarExist(node->variable.id)) {
-                printf("Error: variable %s does not exist in symbol table.\n", node->variable.id);
+                ERROR("Error: variable %s does not exist in symbol table.\n", node->variable.id);
             } else {
                 node->variable.var_type = getVarType(node->variable.id);
                 node->ee = typeToEE(node->variable.var_type);
 	    	}
+
+            // Check 2: If variable is a vector, check that index does not go out of bound.
+            if (IsVector(node->variable.var_type)) {
+                CheckVectorIndex(node->variable.var_type, node->variable.index);
+            }
+
             break;
                        }
 
@@ -321,7 +358,7 @@ void semantic_check_node(AstNode* node) {
         case IF_STATEMENT_NODE:
 		// We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
 		if(node->if_statement.condition->ee.expr_type != LOGICAL){
-		    printf("Error: expression in if statement is not a bool\n");
+		    ERROR("Error: expression in if statement is not a bool\n");
 		}
 		break;
 
@@ -333,13 +370,13 @@ void semantic_check_node(AstNode* node) {
 
 			}
 			else{
-				printf("Error: Assigning a value to a read-only variable\n");
+				ERROR("Error: Assigning a value to a read-only variable\n");
 			}
 
 			// int varType = variableNode->type.type; 
 		}
 		else{
-			printf("Error: In ASSIGNMENT_NODE variable %s does not exist in symbol table.\n", variableNode->variable.id);
+			ERROR("Error: In ASSIGNMENT_NODE variable %s does not exist in symbol table.\n", variableNode->variable.id);
 		}
 		break;
 
@@ -355,7 +392,7 @@ void semantic_check_node(AstNode* node) {
 		}
 
 		else{
-			printf("Error: Improper amount of arguments provided\n");
+			ERROR("Error: Improper amount of arguments provided\n");
 		}
 
 
@@ -378,7 +415,7 @@ void semantic_check_node(AstNode* node) {
 				}
 
 				else{
-					printf("Error: Improper arguments to function RSQ\n");
+					ERROR("Error: Improper arguments to function RSQ\n");
 				}
 
 
@@ -386,7 +423,7 @@ void semantic_check_node(AstNode* node) {
 
                         }
                         else{
-                                printf("Error: Improper amount of arguments to function RSQ \n");
+                                ERROR("Error: Improper amount of arguments to function RSQ \n");
                         }
 		}
 
@@ -400,12 +437,12 @@ void semantic_check_node(AstNode* node) {
                                 }
 
                                 else{
-                                        printf("Error: Improper arguments to function DP3\n");
+                                        ERROR("Error: Improper arguments to function DP3\n");
                                 }
 
                         }
                         else{
-                                printf("Error: Improper amount of arguments to function DP3\n");
+                                ERROR("Error: Improper amount of arguments to function DP3\n");
                         }
                 }
 
@@ -418,16 +455,16 @@ void semantic_check_node(AstNode* node) {
 				}
 
 				else{
-                                	printf("Error: Improper arguments to function LIT\n");
+                                	ERROR("Error: Improper arguments to function LIT\n");
 				}
 			}
 			else{
-				printf("Error: Improper amount of arguments to function LIT \n");
+				ERROR("Error: Improper amount of arguments to function LIT \n");
 			}
                 }
 
 		else{
-			printf("Error: Invalid Function\n");
+			ERROR("Error: Invalid Function\n");
 		}
 
 
@@ -472,7 +509,7 @@ int getOperandType(int operand){
 		return LOGICAL;
 	}
 
-	return ERROR;
+	return -1;
 
 }
 
@@ -490,7 +527,7 @@ int getBaseType(int operand){
         if(operand == BOOL_T ||  operand == BOOL_TRUE || operand == BOOL_FALSE || operand == BVEC2_T || operand == BVEC3_T || operand == BVEC4_T ){
                 return BOOL_T;
        }
-        return ERROR;
+        return -1;
 
 }
 
@@ -509,7 +546,7 @@ int getOpType(int op){
                 return LOGICAL;
         }
 
-	return ERROR;
+	return -1;
 }
 
 
@@ -523,7 +560,7 @@ int getOperandVector(int operand){
 	if(operand == VEC2_T ||operand == VEC3_T ||operand == VEC4_T ||operand == BVEC2_T ||operand == BVEC3_T ||operand == BVEC4_T ||operand == IVEC2_T ||operand == IVEC3_T ||operand == IVEC4_T){
 		return VECTOR;
 	}
-        return ERROR;
+        return -1;
 
 }
 
@@ -539,16 +576,16 @@ int checkOpAndOperandType(int op, int operand){
 
 		int operandVectorType = getOperandVector(operand);
 		if ( operandVectorType == VECTOR && (op == DIV || op == POWER || op == LT || op == LE || op == GT || op == GE)){
-			printf("\nOperand is a vector to a operator that only takes scalar\n"); 
+			ERROR("\nOperand is a vector to a operator that only takes scalar\n"); 
 			return 0;		
 		}
 		return 1;
 	}
 	else{
-		printf("\nThe type of operation and operand is different\n");
+		ERROR("\nThe type of operation and operand is different\n");
 		return 0;
 	}
-        return ERROR;
+        return -1;
 }
 
 
@@ -567,7 +604,7 @@ int checkBinaryOperandTypes(int loperandType, int roperandType){
 		return 1;
 	}
 	else{
-		printf("\nBase type does not match\n");
+		ERROR("\nBase type does not match\n");
 		return 0;
 	}
 }
@@ -602,7 +639,7 @@ int getClassSize(int var_type) {
 int checkVectorIndex(int indexValue, int operandType){
 
 	if (indexValue < 0){
-		printf("\nInavlid index Value\n");
+		ERROR("\nInavlid index Value\n");
 		return 0;
 	}
 
@@ -618,14 +655,14 @@ int checkVectorIndex(int indexValue, int operandType){
 	if(operandType == VEC2_T || operandType == IVEC2_T ||operandType == BVEC2_T ){
                 return indexValue < 2;
         }
-	printf("\nThese is a issue yo\n");
+	ERROR("\nThese is a issue yo\n");
 	return 0;
 }
 
 int checkPredefinedVectorIndex(int indexValue, char * varname){
 
         if (indexValue < 0){
-                printf("\nInavlid indexi Value\n");
+                ERROR("Inavlid indexi Value\n");
 		return 0;
         }
 

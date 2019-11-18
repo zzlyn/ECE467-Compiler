@@ -2,8 +2,6 @@
 
 WALTER
 AST PRINT
-vector indexing
-error printing to file
 symbol table init
 
 
