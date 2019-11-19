@@ -342,7 +342,7 @@ static int indentation = 0;
 
 void print_indentation() {
     for(int i = 0; i < indentation; i++)
-        PRINT_DUMP(" ");
+        PRINT_DUMP("  ");
 }
 
 void ast_print(node *ast) {
@@ -410,6 +410,7 @@ void ast_print(node *ast) {
           
           AstNode* tmp = ast;
           while(tmp != NULL) {
+            print_indentation();
             ast_print(tmp->declarations.declaration);
             tmp = tmp->declarations.declarations;
           }
@@ -437,6 +438,7 @@ void ast_print(node *ast) {
 
           AstNode* tmp = ast;
           while(tmp != NULL) {
+            print_indentation();
             ast_print(tmp->statements.statement);
             tmp = tmp->statements.statements;
           }
@@ -480,7 +482,6 @@ void ast_print(node *ast) {
                                    }
 
       case DECLARATION_NODE:
-          print_indentation();
           PRINT_DUMP("(DECLARATION ");
           // variable_name type_name initial_value
           PRINT_DUMP("%s %s ", ast->declaration.id, ast->declaration.type->type.to_str);
@@ -501,8 +502,6 @@ void ast_print(node *ast) {
           break;
 
       case IF_STATEMENT_NODE:
-          // IF COND THEN_STATEMENT ELSE_STATEMENT
-          print_indentation();
           PRINT_DUMP("(IF ");
           indentation++;
           ast_print(ast->if_statement.condition);
@@ -510,7 +509,7 @@ void ast_print(node *ast) {
           print_indentation();
           ast_print(ast->if_statement.statement);
           
-          if (ast->if_statement.else_statement) {
+          if (ast->if_statement.else_statement != NULL) {
             indentation--;
             print_indentation();
             PRINT_DUMP(" ELSE\n");
@@ -527,7 +526,6 @@ void ast_print(node *ast) {
 
       case ASSIGNMENT_NODE:
           // ASSIGN type variable_name new_value
-          print_indentation();
           PRINT_DUMP("(ASSIGN %s %s ", var_type_to_str(ast->assignment.variable->variable.var_type).c_str(),ast->assignment.variable->variable.id);
           ast_print(ast->assignment.expression);
           PRINT_DUMP(")\n");
