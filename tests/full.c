@@ -31,6 +31,11 @@
        //coeff=lit(eyeNorm);
    if (true || false)
        coeff=lit(vec4(1.0,1.0,1.0,1.0));
+   
+   if (true) {
+    bool a = false;
+   }
+   
    coeff = lit(4.0 * coeff);
    coeff = lit(4576);
    shade = shade + coeff[1] * fCol;

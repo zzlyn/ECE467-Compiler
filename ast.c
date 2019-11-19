@@ -309,8 +309,10 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
 
         case IF_STATEMENT_NODE:
             ast_traverse_post(ast->if_statement.condition, post_call);
+            in_ifelse_scope = true;
             ast_traverse_post(ast->if_statement.statement, post_call);
             ast_traverse_post(ast->if_statement.else_statement, post_call);
+            in_ifelse_scope = false;
             break;
 
         case ASSIGNMENT_NODE:
@@ -574,6 +576,15 @@ void ast_print(node *n) {
 
         default: break;
     }
+}
+
+bool IsOneLineStmt(AstNode* stmt) {
+    if (!stmt)
+        return false;
+
+    if (stmt->kind == ASSIGNMENT_NODE || stmt->kind == IF_STATEMENT_NODE)
+        return true;
+    return false;
 }
 
 void ast_free(node *ast) {
