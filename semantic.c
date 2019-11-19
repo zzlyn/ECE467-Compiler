@@ -373,11 +373,17 @@ void semantic_check_node(AstNode* node) {
                            } else {
                                node->variable.var_type = getVarType(node->variable.id);
                                node->ee = typeToEE(node->variable.var_type);
+                               
                            }
+                                if(node->variable.deref){
+                                        node->ee.class_size = 1;
+                                }
+
 
                            // Check 2: If variable is a vector, check that index does not go out of bound.
                            if (IsVector(node->variable.var_type)) {
                                CheckVectorIndex(node->variable.var_type, node->variable.index, line);
+
                            }
 
                            break;
@@ -390,7 +396,7 @@ void semantic_check_node(AstNode* node) {
                        if(node->if_statement.condition->ee.has_error)
                            break;
                        // We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
-                       if(node->if_statement.condition->ee.expr_type != LOGICAL_EXPR){
+                       if(!(node->if_statement.condition->ee.expr_type == LOGICAL_EXPR && node->if_statement.condition->ee.class_size == 1)){
                            ERROR("Error(line %i): expression in if statement is not a bool type\n", line);
                        }
                        break;
