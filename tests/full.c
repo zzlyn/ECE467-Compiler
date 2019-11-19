@@ -12,6 +12,7 @@
    int b = 10;
    eyeNorm = fTex;
    b = eyeNorm;
+   b = -a * 4;
    eyeNorm[3] = dp3(eyeNorm,eyeNorm);
    eyeNorm[3] = rsq(eyeNorm[3]);
    eyeNorm = eyeNorm * eyeNorm[3];

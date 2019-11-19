@@ -6,6 +6,7 @@
 #include "ast.h"
 #include "symbol.h"
 #include "common.h"
+#include "semantic.h"
 #include "parser.tab.h"
 
 #define DEBUG_PRINT_TREE 0
@@ -453,7 +454,7 @@ void ast_print(node *n) {
         case UNARY_EXPRESSION_NODE: {
                                         PRINT_DUMP("(UNARY ");
 
-                                        std::string type = n->unary_expr.op == MINUS ? "ARITHMETIC" : "LOGICAL";
+                                        std::string type = var_type_to_str(ExprNodeToType(n->unary_expr.right));
                                         std::string symbol = n->unary_expr.op == MINUS ? "- " : "! ";
 
                                         PRINT_DUMP("%s %s", type.c_str(), symbol.c_str());
@@ -465,14 +466,9 @@ void ast_print(node *n) {
         case BINARY_EXPRESSION_NODE: {
                                          PRINT_DUMP("(BINARY ");
                                          // Print type.
-                                         int t = n->binary_expr.op;
-                                         if (t == PLUS || t == MINUS || t == MUL || t == DIV || t == POWER) {
-                                             PRINT_DUMP("ARITHMETIC ");
-                                         } else {
-                                             PRINT_DUMP("LOGICAL ");
-                                         }
+                                         PRINT_DUMP("%s ", var_type_to_str(ExprNodeToType(n)).c_str());
                                          // Print operation.
-                                         PRINT_DUMP("%s ", binary_op_to_str(t).c_str());
+                                         PRINT_DUMP("%s ", binary_op_to_str(n->binary_expr.op).c_str());
                                          // Print left and right.
                                          ast_print(n->binary_expr.left);
                                          PRINT_DUMP(" ");
