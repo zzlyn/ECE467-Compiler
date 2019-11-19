@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <stdio.h> 
 
-#define ARITHMETIC  0
-#define LOGICAL  1
-#define COMPARISON  2
+#define ARITHMETIC_OP  0
+#define LOGICAL_OP  1
+#define COMPARISON_OP  2
 #define SCALAR 3
 #define VECTOR  4
 
@@ -63,8 +63,6 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
 	AstNode * node = givenNode;        
 	while(node != NULL){
 		ExprEval ee = node->arguments.expression->ee;
-                //printf("Type to check is %d . Arg type is %d\n",typeToCheck,ee.base_type);
-
 		if(typeToCheck != ee.base_type){
 			return 0;
 		}
@@ -79,11 +77,9 @@ int argSizeCheck(int sizeToCheck, AstNode * givenNode){
         while(node != NULL){
                 ExprEval ee = node->arguments.expression->ee;
 		int classSize = ee.class_size;
-		//printf("Variable index is %d\n", node->arguments.expression->variable.index);
-		if(node->arguments.expression->variable.deref){
+        if(node->arguments.expression->kind == VAR_NODE && node->arguments.expression->variable.deref){
 			classSize = 1;
 		}
-		//printf("Given Size is %d. Calculated size is %d\n",sizeToCheck, classSize);
                 if(sizeToCheck != classSize){
                         return 0;
                 }
@@ -151,10 +147,10 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     int op_type = getOpType(op);
 
     // Case 1: Arithmetic.
-    if (op_type == ARITHMETIC) {
+    if (op_type == ARITHMETIC_OP) {
         // Arithemtic operands also need to be arithemetic.
-        if (left_ee.expr_type != ARITHMETIC ||
-            right_ee.expr_type != ARITHMETIC) {
+        if (left_ee.expr_type != ARITHMETIC_EXPR ||
+            right_ee.expr_type != ARITHMETIC_EXPR) {
             ERROR("Error: Both operands of arithmetic operator needs to be arithmetic.\n");
             return ExprError;
         }
@@ -170,11 +166,10 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Accept ss or vv;
         if (op == PLUS || op == MINUS) {
             if (left_ee.class_size != right_ee.class_size) {
-                ERROR("Error: Operands of \"+\" or \"-\" needs to be scalar-scalar or vectors of same size.\n");
                 return ExprError;
             }
 
-            return (ExprEval) {.has_error = false, .expr_type=ARITHMETIC, .base_type=base_type, .class_size=left_ee.class_size};
+            return (ExprEval) {.has_error = false, .expr_type=ARITHMETIC_EXPR, .base_type=base_type, .class_size=left_ee.class_size};
         }
 
         // Accept ss, vv, vs or sv;
@@ -182,7 +177,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
             if (left_ee.class_size == 1 || right_ee.class_size == 1) {
                 // One of the sub expr is a scalar, we accept the max 
                 // class size regardless of what the other expr is.
-                return (ExprEval) {false, ARITHMETIC, base_type, max(left_ee.class_size, right_ee.class_size)};
+                return (ExprEval) {false, ARITHMETIC_EXPR, left_ee.class_size > right_ee.class_size ? left_ee.base_type : right_ee.base_type, max(left_ee.class_size, right_ee.class_size)};
             }
             
             // None of the class_sizes are 1. Means we have 2 vectors
@@ -193,7 +188,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
             }
 
             // Equal size vectors, inherit from left.
-            return (ExprEval) {false, ARITHMETIC, base_type, left_ee.class_size};
+            return (ExprEval) {false, ARITHMETIC_EXPR, base_type, left_ee.class_size};
         }
 
         // Accept ss only.
@@ -202,7 +197,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
                 ERROR("Error: Vectors are not accepted for \"/\" or \"^\".\n");
                 return ExprError;
             }
-            return (ExprEval) {false, ARITHMETIC, base_type, 1};
+            return (ExprEval) {false, ARITHMETIC_EXPR, base_type, 1};
         }
 
         // None reached.
@@ -210,9 +205,9 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     }
 
     // Case 2: Logical and binary.
-    if (op_type == LOGICAL) {
+    if (op_type == LOGICAL_OP) {
         // Must have boolean logical operands.
-        if (left_ee.expr_type != LOGICAL || right_ee.expr_type != LOGICAL) {
+        if (left_ee.expr_type != LOGICAL_EXPR || right_ee.expr_type != LOGICAL_EXPR) {
             ERROR("Error: Operands of a logical operator needs to be of logical types.\n");
             return ExprError;
         }
@@ -223,11 +218,11 @@ ExprEval evaluate_binary_expression(AstNode* node) {
             return ExprError;
         }
 
-        return (ExprEval) {false, LOGICAL, BOOL_T, left_ee.class_size};      
+        return (ExprEval) {false, LOGICAL_EXPR, BOOL_T, left_ee.class_size};      
     }
 
     // Case 3: Comparisons.
-    if (op_type == COMPARISON) {
+    if (op_type == COMPARISON_OP) {
         // All operands must be arithmetic.
         if (left_ee.expr_type != ARITHMETIC_EXPR || right_ee.expr_type != ARITHMETIC_EXPR) {
             ERROR("Error: Operands of a comparison operator needs to be arithmetic.\n");
@@ -247,7 +242,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
 
         // ss or vv accepted.
         if (op == EQ || op == NE)
-            return (ExprEval) {false, LOGICAL, BOOL_T, left_ee.class_size};    
+            return (ExprEval) {false, LOGICAL_EXPR, BOOL_T, left_ee.class_size};    
         
         // For other operators, only ss accepted.
         if (left_ee.class_size != 1) {
@@ -255,7 +250,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
             return ExprError;
         }
 
-        return (ExprEval) {false, LOGICAL, BOOL_T, 1};
+        return (ExprEval) {false, LOGICAL_EXPR, BOOL_T, 1};
     }
 
     return ExprError;
@@ -392,7 +387,7 @@ void semantic_check_node(AstNode* node) {
 		if(node->if_statement.condition->ee.has_error)
             break;
         // We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
-		if(node->if_statement.condition->ee.expr_type != LOGICAL){
+		if(node->if_statement.condition->ee.expr_type != LOGICAL_EXPR){
 		    ERROR("Error: expression in if statement is not a bool type\n");
 		}
 		break;
@@ -421,7 +416,6 @@ void semantic_check_node(AstNode* node) {
 		node->ee = typeToEE(node->constructor.type->type.type);
 		int numArgsGiven = getNumArgs(node->constructor.arguments);
 		int numNecessaryArgs = numArgsConstruct(node->constructor.type->type.type);
-		//printf("COnstrucitng node\n");
 		if(numNecessaryArgs > 0 && numNecessaryArgs == numArgsGiven){
 			if(argTypeCheck(getBaseType(node->constructor.type->type.type), node->function.arguments)){
 
@@ -490,7 +484,7 @@ void semantic_check_node(AstNode* node) {
 				if(argTypeCheck(FLOAT_T, node->function.arguments)){
 
                                         if(!argSizeCheck(4,node->function.arguments)){
-                                                ERROR("Error: Improper arguments to function LIT\n");
+                                            ERROR("Error: Improper arguments to function LIT\n");
 					}
 				}
 				else{
@@ -538,12 +532,12 @@ int getOperandType(int operand){
 
 
 	if(operand == INT_T ||  operand == INT ||operand == FLOAT_T ||operand == FLOAT || operand == VEC2_T || operand == VEC3_T ||operand == VEC4_T || operand == IVEC2_T ||operand == IVEC3_T ||operand == IVEC4_T){
-		return ARITHMETIC;
+		return ARITHMETIC_EXPR;
 	}
 
 
 	if	(operand == BOOL_T ||operand == BOOL_TRUE ||operand == BOOL_FALSE  || operand == BVEC2_T ||operand == BVEC3_T ||operand == BVEC4_T){
-		return LOGICAL;
+		return LOGICAL_EXPR;
 	}
 
 	return -1;
@@ -572,15 +566,15 @@ int getBaseType(int operand){
 int getOpType(int op){
 
 	if (op == PLUS || op == MINUS || op == MUL || op == DIV || op == POWER ) {
-		return ARITHMETIC;
+		return ARITHMETIC_OP;
 	}
 
 	if (op == LT || op == LE || op == EQ || op == NE || op == GT || op == GE ){
-                return COMPARISON;
+                return COMPARISON_OP;
         }
 
 	if (op == AND || op == OR ){
-                return LOGICAL;
+                return LOGICAL_OP;
         }
 
 	return -1;
@@ -609,7 +603,7 @@ int checkOpAndOperandType(int op, int operand){
 
 	int opType = getOpType(op);
 	int operandType = getOperandType(operand);  
-	if(opType == operandType ||  (opType == COMPARISON && operandType == ARITHMETIC) ){
+	if(opType == operandType ||  (opType == COMPARISON_OP && operandType == ARITHMETIC_EXPR) ){
 
 		int operandVectorType = getOperandVector(operand);
 		if ( operandVectorType == VECTOR && (op == DIV || op == POWER || op == LT || op == LE || op == GT || op == GE)){
