@@ -8,6 +8,7 @@
    const vec4 lVec = env1;
    const vec4 lHalf = gl_Light_Half; 
    const vec4 red = vec4(1.0,0.0,0.0,1.0);
+   const bool red_b = red[0];
    int b = 10;
    eyeNorm = fTex;
    eyeNorm[3] = dp3(eyeNorm,eyeNorm);

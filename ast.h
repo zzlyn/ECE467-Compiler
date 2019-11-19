@@ -176,4 +176,6 @@ void ast_traverse_post(AstNode* root, NodeFunc post_call);
 void ast_free(node *ast);
 void ast_print(node * ast);
 
+std::string var_type_to_str(int type);
+
 #endif /* AST_H_ */

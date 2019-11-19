@@ -109,9 +109,9 @@ WHILE
 CONST
 
 // Types
-INT_T
+%token <type_code> INT_T
 %token <intVal> INT
-FLOAT_T
+%token <type_code> FLOAT_T
 %token <floatVal> FLOAT
 
 // Symbols
@@ -133,7 +133,7 @@ DIV
 POWER 
 
 // Boolean stuff.
-BOOL_T 
+%token <type_code> BOOL_T 
 %token <boolVal> BOOL_TRUE 
 %token <boolVal> BOOL_FALSE 
 

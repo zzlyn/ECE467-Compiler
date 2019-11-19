@@ -307,9 +307,7 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
             break;
 
         case IF_STATEMENT_NODE:
-            // printf("1\n");
             ast_traverse_post(ast->if_statement.condition, post_call);
-            // printf("2\n");
             ast_traverse_post(ast->if_statement.statement, post_call);
             ast_traverse_post(ast->if_statement.else_statement, post_call);
             break;
@@ -348,23 +346,23 @@ void print_indentation() {
         PRINT_DUMP("  ");
 }
 
-void ast_print(node *ast) {
+void ast_print(node *n) {
 
-    if (ast == NULL) {
+    if (n == NULL) {
         return;
     }
 
-    switch(ast->kind) {
+    switch(n->kind) {
         case INT_NODE:
-            PRINT_DUMP("%i", ast->integer.val);
+            PRINT_DUMP("%i", n->integer.val);
             break;
 
         case FLOAT_NODE:
-            PRINT_DUMP("%f", ast->float_num.val);
+            PRINT_DUMP("%f", n->float_num.val);
             break;
 
         case BOOL_NODE:
-            if (ast->boolean.val) {
+            if (n->boolean.val) {
                 PRINT_DUMP("true");
             } else {
                 PRINT_DUMP("false");
@@ -374,7 +372,7 @@ void ast_print(node *ast) {
         case PROGRAM_NODE:
             PRINT_DUMP("(PROGRAM \n");
             indentation++;
-            ast_print(ast->program.scope);
+            ast_print(n->program.scope);
             indentation--;
             PRINT_DUMP(")\n");
             break;
@@ -385,10 +383,10 @@ void ast_print(node *ast) {
 
             indentation++;
 
-            ast_print(ast->scope.declarations);
+            ast_print(n->scope.declarations);
             // One empty line between to make things look nicer.
             PRINT_DUMP("\n");
-            ast_print(ast->scope.statements);
+            ast_print(n->scope.statements);
 
             indentation--;
 
@@ -399,19 +397,19 @@ void ast_print(node *ast) {
         case DECLARATIONS_NODE: {
                                     // Reverse declarations order from bottom up to top down.
                                     AstNode* prev = NULL;
-                                    while(ast != NULL) {
-                                        AstNode* next = ast->declarations.declarations;
-                                        ast->declarations.declarations = prev;
-                                        prev = ast;
-                                        ast = next;
+                                    while(n != NULL) {
+                                        AstNode* next = n->declarations.declarations;
+                                        n->declarations.declarations = prev;
+                                        prev = n;
+                                        n = next;
                                     }
-                                    ast = prev;
+                                    n = prev;
 
                                     print_indentation();
                                     PRINT_DUMP("(DECLARATIONS \n");
                                     indentation++;
 
-                                    AstNode* tmp = ast;
+                                    AstNode* tmp = n;
                                     while(tmp != NULL) {
                                         print_indentation();
                                         ast_print(tmp->declarations.declaration);
@@ -427,19 +425,19 @@ void ast_print(node *ast) {
         case STATEMENTS_NODE: {
                                   // Reverse statements order from bottom up to top down.
                                   AstNode* prev = NULL;
-                                  while(ast != NULL) {
-                                      AstNode* next = ast->statements.statements;
-                                      ast->statements.statements = prev;
-                                      prev = ast;
-                                      ast = next;
+                                  while(n != NULL) {
+                                      AstNode* next = n->statements.statements;
+                                      n->statements.statements = prev;
+                                      prev = n;
+                                      n = next;
                                   }
-                                  ast = prev;
+                                  n = prev;
 
                                   print_indentation();
                                   PRINT_DUMP("(STATEMENTS \n");
                                   indentation++;
 
-                                  AstNode* tmp = ast;
+                                  AstNode* tmp = n;
                                   while(tmp != NULL) {
                                       print_indentation();
                                       ast_print(tmp->statements.statement);
@@ -455,11 +453,11 @@ void ast_print(node *ast) {
         case UNARY_EXPRESSION_NODE: {
                                         PRINT_DUMP("(UNARY ");
 
-                                        std::string type = ast->unary_expr.op == MINUS ? "ARITHMETIC" : "LOGICAL";
-                                        std::string symbol = ast->unary_expr.op == MINUS ? "- " : "! ";
+                                        std::string type = n->unary_expr.op == MINUS ? "ARITHMETIC" : "LOGICAL";
+                                        std::string symbol = n->unary_expr.op == MINUS ? "- " : "! ";
 
                                         PRINT_DUMP("%s %s", type.c_str(), symbol.c_str());
-                                        ast_print(ast->unary_expr.right);
+                                        ast_print(n->unary_expr.right);
                                         PRINT_DUMP(")");
                                         break;
                                     }
@@ -467,7 +465,7 @@ void ast_print(node *ast) {
         case BINARY_EXPRESSION_NODE: {
                                          PRINT_DUMP("(BINARY ");
                                          // Print type.
-                                         int t = ast->binary_expr.op;
+                                         int t = n->binary_expr.op;
                                          if (t == PLUS || t == MINUS || t == MUL || t == DIV || t == POWER) {
                                              PRINT_DUMP("ARITHMETIC ");
                                          } else {
@@ -476,9 +474,9 @@ void ast_print(node *ast) {
                                          // Print operation.
                                          PRINT_DUMP("%s ", binary_op_to_str(t).c_str());
                                          // Print left and right.
-                                         ast_print(ast->binary_expr.left);
+                                         ast_print(n->binary_expr.left);
                                          PRINT_DUMP(" ");
-                                         ast_print(ast->binary_expr.right);
+                                         ast_print(n->binary_expr.right);
 
                                          PRINT_DUMP(")");
                                          break;
@@ -487,17 +485,18 @@ void ast_print(node *ast) {
         case DECLARATION_NODE:
                                      PRINT_DUMP("(DECLARATION ");
                                      // variable_name type_name initial_value
-                                     PRINT_DUMP("%s %s ", ast->declaration.id, ast->declaration.type->type.to_str);
-                                     ast_print(ast->declaration.expression);
+                                     ast_print(n->declaration.type);
+                                     PRINT_DUMP("%s %s ", n->declaration.id, n->declaration.type->type.to_str);
+                                     ast_print(n->declaration.expression);
                                      PRINT_DUMP(")\n");
                                      break;
 
         case VAR_NODE:
-                                     if (!ast->variable.deref) {
-                                         PRINT_DUMP("%s", ast->variable.id);
+                                     if (!n->variable.deref) {
+                                         PRINT_DUMP("%s", n->variable.id);
                                      } else {
                                          // INDEX type id index.
-                                         PRINT_DUMP("(INDEX %s %s %i)", var_type_to_str(ast->variable.var_type).c_str(), ast->variable.id, ast->variable.index);
+                                         PRINT_DUMP("(INDEX %s %s %i)", var_type_to_str(n->variable.var_type).c_str(), n->variable.id, n->variable.index);
                                      }
                                      break;
 
@@ -507,19 +506,19 @@ void ast_print(node *ast) {
         case IF_STATEMENT_NODE:
                                      PRINT_DUMP("(IF ");
                                      indentation++;
-                                     ast_print(ast->if_statement.condition);
+                                     ast_print(n->if_statement.condition);
                                      PRINT_DUMP("\n");
                                      print_indentation();
-                                     ast_print(ast->if_statement.statement);
+                                     ast_print(n->if_statement.statement);
 
-                                     if (ast->if_statement.else_statement != NULL) {
+                                     if (n->if_statement.else_statement != NULL) {
                                          indentation--;
                                          print_indentation();
                                          PRINT_DUMP(" ELSE\n");
                                          indentation++;
 
                                          print_indentation();
-                                         ast_print(ast->if_statement.else_statement);
+                                         ast_print(n->if_statement.else_statement);
                                      }
 
                                      indentation--;
@@ -529,28 +528,43 @@ void ast_print(node *ast) {
 
         case ASSIGNMENT_NODE:
                                      // ASSIGN type variable_name new_value
-                                     PRINT_DUMP("(ASSIGN %s %s ", var_type_to_str(ast->assignment.variable->variable.var_type).c_str(),ast->assignment.variable->variable.id);
-                                     ast_print(ast->assignment.expression);
+                                     PRINT_DUMP("(ASSIGN %s %s ", var_type_to_str(n->assignment.variable->variable.var_type).c_str(),n->assignment.variable->variable.id);
+                                     ast_print(n->assignment.expression);
                                      PRINT_DUMP(")\n");
                                      break;
 
         case CONSTRUCTOR_NODE:
-                                     PRINT_DUMP("(CALL %s ", ast->constructor.type->type.to_str);
-                                     ast_print(ast->constructor.arguments);
+                                     PRINT_DUMP("(CALL %s ", n->constructor.type->type.to_str);
+                                     ast_print(n->constructor.arguments);
                                      PRINT_DUMP(")");
                                      break;
 
         case FUNCTION_NODE:
-                                     PRINT_DUMP("(CALL %s ", ast->function.name);
-                                     ast_print(ast->function.arguments);
+                                     PRINT_DUMP("(CALL %s ", n->function.name);
+                                     ast_print(n->function.arguments);
                                      PRINT_DUMP(")");
                                      break;
 
-        case ARGUMENTS_NODE:
-                                     ast_print(ast->arguments.expression);
-                                     break;
+        case ARGUMENTS_NODE: {
+                                 AstNode* prev = NULL;
+                                 // Reverse arguments.
+                                 while(n != NULL) {
+                                    AstNode* next = n->arguments.arguments;
+                                    n->arguments.arguments = prev;
+                                    prev = n;
+                                    n = next;
+                                 }
+                                 n = prev;
 
-                                     // ...
+                                 AstNode* tmp = n;
+                                 while(tmp != NULL) {
+                                    ast_print(tmp->arguments.expression);
+                                    std::string suffix = tmp->arguments.arguments != NULL ? ", " : "";
+                                    PRINT_DUMP(suffix.c_str());
+                                    tmp = tmp->arguments.arguments;
+                                 }
+                                 break;
+                             }
 
         default: break;
     }
