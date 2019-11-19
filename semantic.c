@@ -11,6 +11,9 @@
 #define SCALAR 559
 #define VECTOR 560
 
+#define DEBUGGING false
+
+#define DEBUG_PRINT(...) { if(DEBUGGING) printf(__VA_ARGS__); }
 #define ERROR(...) { fprintf(errorFile, __VA_ARGS__); errorOccurred = 1; }
 
 int checkPredefinedVectorIndex(int indexValue, char * varname);
@@ -62,7 +65,6 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
     AstNode * node = givenNode;        
     while(node != NULL){
         ExprEval ee = node->arguments.expression->ee;
-	printf("Type to check is %d . Arg type is %d\n",typeToCheck, ee.base_type);
         if(typeToCheck != ee.base_type){
             return 0;
         }
@@ -266,7 +268,6 @@ ExprEval typeToEE(int type) {
 
 int funcNameToRetType(char* func_name) {
     std::string name(func_name);
-	printf("Name is %s \n",func_name);
     if (name == "RSQ")
         return FLOAT_T;
 
@@ -444,7 +445,6 @@ void semantic_check_node(AstNode* node) {
         case FUNCTION_NODE: {// Needs to set ExprEvalal.
                                 int func_type = funcNameToRetType(node->function.name);
                                 node->ee = typeToEE(func_type);
-				printf("Type is %d\n",node->ee.base_type);
                                 if(!strcmp(node->function.name,"RSQ")){
                                     int numArgs = getNumArgs(node->function.arguments);
                                     if(numArgs == 1){
