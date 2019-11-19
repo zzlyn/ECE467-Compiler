@@ -80,8 +80,6 @@ node *ast_allocate(node_kind kind, ...) {
           ast->variable.id = va_arg(args, char*);
           ast->variable.index = va_arg(args, int);
           ast->variable.deref = va_arg(args, int);
-
-
           break;
 
       case TYPE_NODE:
@@ -306,7 +304,9 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
           break;
 
       case IF_STATEMENT_NODE:
+          // printf("1\n");
           ast_traverse_post(ast->if_statement.condition, post_call);
+          // printf("2\n");
           ast_traverse_post(ast->if_statement.statement, post_call);
           ast_traverse_post(ast->if_statement.else_statement, post_call);
           break;
@@ -472,6 +472,7 @@ void ast_print(node *ast) {
           PRINT_DUMP("%s ", binary_op_to_str(t).c_str());
           // Print left and right.
           ast_print(ast->binary_expr.left);
+          PRINT_DUMP(" ");
           ast_print(ast->binary_expr.right);
 
           PRINT_DUMP(")");

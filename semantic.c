@@ -11,7 +11,9 @@
 #define SCALAR 3
 #define VECTOR  4
 
-#define ERROR(...) fprintf(errorFile, __VA_ARGS__); errorOccurred = 1;
+#define FIRST_ERROR_ONLY true
+
+#define ERROR(...) if(!(FIRST_ERROR_ONLY && errorOccurred)) { fprintf(errorFile, __VA_ARGS__); errorOccurred = 1; }
 
 int checkVectorIndex(int indexValue, int operandType);
 int checkPredefinedVectorIndex(int indexValue, char * varname);
@@ -356,6 +358,7 @@ void semantic_check_node(AstNode* node) {
         case DECLARATION_NODE:
 		if( varnameCanBeDeclared(node->declaration.id)){
             bool initiated = (AstNode*)node->declaration.expression != (AstNode*)NULL;
+            // Ask on piazza and decide const checks.
 			addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const, initiated);
 		}
 		else{
@@ -393,11 +396,10 @@ void semantic_check_node(AstNode* node) {
         case ASSIGNMENT_NODE:{
 		AstNode * variableNode = node->assignment.variable;
 		if(doesVarExist(variableNode->variable.id)) {
-
-			if(!isReadOnly(variableNode->variable.id)){
+			if(!isReadOnly(variableNode->variable.id)) {
                 // Set initiated to true.
-                printf("a: %s\n", variableNode->variable.id);
-                set_initiated(variableNode->variable.id);
+                if(!predefinedVarnameCheck(variableNode->variable.id))
+                    set_initiated(variableNode->variable.id);
 			}
 			else{
 				ERROR("Error: Assigning a value to a read-only variable\n");
@@ -417,8 +419,6 @@ void semantic_check_node(AstNode* node) {
 		int numNecessaryArgs = numArgsConstruct(node->constructor.type->type.type);
 		//printf("COnstrucitng node\n");
 		if(numNecessaryArgs > 0 && numNecessaryArgs == numArgsGiven){
-
-
 			if(argTypeCheck(getBaseType(node->constructor.type->type.type), node->function.arguments)){
 
 			                        if(!argSizeCheck(1,node->function.arguments)){

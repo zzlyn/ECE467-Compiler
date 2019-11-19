@@ -1,9 +1,7 @@
 
 
 WALTER
-AST PRINT
-symbol table init
-
+AST PRINT - TBC
 
 RUPAN
 function
