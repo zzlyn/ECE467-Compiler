@@ -39,6 +39,15 @@ int isReadOnly(char * varname){
 
 
 
+int isWriteOnly(char * varname){
+
+	if(!strcmp(varname,"gl_FragColor") || !strcmp(varname,"gl_FragDepth")){
+        		return 1;
+       	}
+	return 0;
+}
+
+
 
 int getNumArgs(AstNode * node){
 	int count = 0;
