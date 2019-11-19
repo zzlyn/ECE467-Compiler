@@ -4,12 +4,9 @@ WALTER
 AST PRINT - TBC
 
 RUPAN
-function
 Implicit
-constructor
-initiliazation
 assignment
-predefined variables
+	predefined variables write only
 
 Test
 Operators
