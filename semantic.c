@@ -21,6 +21,8 @@ int getOpType(int op);
 int getBaseType(int op);
 int getClassSize(int type);
 
+int ExprNodeToType(AstNode* node);
+
 int isReadOnly(char * varname){
 
     if(predefinedVarnameCheck(varname)){
@@ -121,19 +123,24 @@ int numArgsConstruct(int type){
     return 0;
 }
 
+std::string ExprNodeToTypeStr(AstNode* node) {
+    return var_type_to_str(ExprNodeToType(node));
+}
 
 ExprEval evaluate_unary_expression(AstNode* node) {
     // Check if op and child type match. Class does not matter since
     // unary accepts both vectors and scalars.
     int child_type = node->unary_expr.right->ee.expr_type;
 
+    std::string child_type_str = ExprNodeToTypeStr(node->unary_expr.right);
+
     if (node->unary_expr.op == MINUS && child_type != ARITHMETIC_EXPR) {
-        ERROR("Error(line %i): Expression after unary \"-\" needs to be arithmetic.\n", node->line);
+        ERROR("Error(line %i): Expression after unary \"-\" needs to be arithmetic but is %s.\n", node->line, child_type_str.c_str());
         return ExprError;
     }
 
     if (node->unary_expr.op == NOT && child_type != LOGICAL_EXPR) {
-        ERROR("Error(line %i): Expression after unary \"!\" needs to be logical.\n", node->line);
+        ERROR("Error(line %i): Expression after unary \"!\" needs to be logical but is %s.\n", node->line, child_type_str.c_str());
         return ExprError;
     }
 
@@ -162,13 +169,15 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Arithemtic operands also need to be arithemetic.
         if (left_ee.expr_type != ARITHMETIC_EXPR ||
                 right_ee.expr_type != ARITHMETIC_EXPR) {
-            ERROR("Error(line %i): Both operands of arithmetic operator needs to be arithmetic.\n", node->line);
+            ERROR("Error(line %i): Both operands of arithmetic operator needs to be arithmetic. (left: %s, right: %s)\n", node->line, 
+                    ExprNodeToTypeStr(node->binary_expr.left).c_str(), ExprNodeToTypeStr(node->binary_expr.right).c_str());
             return ExprError;
         }
 
         // Left & right base types need to be the same.
         if (left_ee.base_type != right_ee.base_type) {
-            ERROR("Error(line %i): Operands of arithmetic operator needs to be of the same base type.\n", node->line);
+            ERROR("Error(line %i): Operands of arithmetic operator needs to be of the same base type. (left base: %s, right base: %s)\n", node->line,
+                    var_type_to_str(left_ee.base_type).c_str(), var_type_to_str(right_ee.base_type).c_str());
             return ExprError;
         }
 
@@ -194,7 +203,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
             // None of the class_sizes are 1. Means we have 2 vectors
             // and their sizes need to match in this case.
             if (left_ee.class_size != right_ee.class_size) {
-                ERROR("Error(line %i): Operands of \"*\" are vectors of different sizes.\n", node->line);
+                ERROR("Error(line %i): Operands of \"*\" are vectors of different sizes. (left size: %i, right size: %i)\n", node->line, left_ee.class_size, right_ee.class_size);
                 return ExprError;
             }
 
@@ -219,13 +228,15 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     if (op_type == LOGICAL_OP) {
         // Must have boolean logical operands.
         if (left_ee.expr_type != LOGICAL_EXPR || right_ee.expr_type != LOGICAL_EXPR) {
-            ERROR("Error(line %i): Operands of a logical operator needs to be of logical types.\n", node->line);
+            ERROR("Error(line %i): Operands of a logical operator needs to be of logical types. (left: %s, right: %s)\n", node->line,
+                    ExprNodeToTypeStr(node->binary_expr.left).c_str(), ExprNodeToTypeStr(node->binary_expr.right).c_str());
             return ExprError;
         }
 
         // ss or vv
         if (left_ee.class_size != right_ee.class_size) {
-            ERROR("Error(line %i): Operands of a logical operator needs to be scalar-scalar of vectors of same size\n", node->line);
+            ERROR("Error(line %i): Operands of a logical operator needs to be scalar-scalar of vectors of same size. (left size: %i, right size: %i)\n", node->line,
+                    left_ee.class_size, right_ee.class_size);
             return ExprError;
         }
 
@@ -236,18 +247,21 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     if (op_type == COMPARISON_OP) {
         // All operands must be arithmetic.
         if (left_ee.expr_type != ARITHMETIC_EXPR || right_ee.expr_type != ARITHMETIC_EXPR) {
-            ERROR("Error(line %i): Operands of a comparison operator needs to be arithmetic.\n", node->line);
+            ERROR("Error(line %i): Operands of a comparison operator needs to be arithmetic. (left %s, right %s)\n", node->line,
+                    ExprNodeToTypeStr(node->binary_expr.left).c_str(), ExprNodeToTypeStr(node->binary_expr.right).c_str());
             return ExprError;
         }
 
         // Base types need to be the same.
         if (left_ee.base_type != right_ee.base_type) {
-            ERROR("Error(line %i): Operands of a comparison operator needs to have the same arithmetic base type.\n", node->line);
+            ERROR("Error(line %i): Operands of a comparison operator needs to have the same arithmetic base type. (left base: %s, right base: %s)\n", node->line,
+                    var_type_to_str(left_ee.base_type).c_str(), var_type_to_str(right_ee.base_type).c_str());
             return ExprError;
         }
 
         if (left_ee.class_size != right_ee.class_size) {
-            ERROR("Error(line %i): Operands of a comparison operator needs to be scalar-scalar or vectors of same size.\n", node->line);
+            ERROR("Error(line %i): Operands of a comparison operator needs to be scalar-scalar or vectors of same size. (left size: %i, right size: %i)\n", node->line,
+                    left_ee.class_size, right_ee.class_size);
             return ExprError;
         }
 
