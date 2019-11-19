@@ -1,4 +1,5 @@
 {   
+   int a = 4;
    vec4 fCol = gl_Color;
    vec4 fTex = gl_TexCoord;
    vec4 eyeNorm;
@@ -7,6 +8,7 @@
    const vec4 lVec = env1;
    const vec4 lHalf = gl_Light_Half; 
    const vec4 red = vec4(1.0,0.0,0.0,1.0);
+   int b = 10;
    eyeNorm = fTex;
    eyeNorm[3] = dp3(eyeNorm,eyeNorm);
    eyeNorm[3] = rsq(eyeNorm[3]);
@@ -27,6 +29,7 @@
    if (true || false)
        coeff=lit(vec4(1.0,1.0,1.0,1.0));
    coeff=lit(2.0*eyeNorm);
+   coeff = lit(456);
    shade = shade + coeff[1] * fCol;
    shade = shade + coeff[2] * fCol;
    gl_FragColor = shade;

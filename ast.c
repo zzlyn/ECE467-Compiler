@@ -12,6 +12,8 @@
 
 #define PRINT_DUMP(...) fprintf(dumpFile, __VA_ARGS__);
 
+extern int yyline;
+
 node *ast = NULL;
 
 node *ast_allocate(node_kind kind, ...) {
@@ -21,6 +23,7 @@ node *ast_allocate(node_kind kind, ...) {
   ast = (AstNode *) malloc(sizeof(AstNode));
   memset(ast, 0, sizeof *ast);
   ast->kind = kind;
+  ast->line = yyline;
 
   va_start(args, kind); 
 

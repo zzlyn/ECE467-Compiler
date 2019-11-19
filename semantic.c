@@ -13,7 +13,6 @@
 
 #define ERROR(...) { fprintf(errorFile, __VA_ARGS__); errorOccurred = 1; }
 
-int checkVectorIndex(int indexValue, int operandType);
 int checkPredefinedVectorIndex(int indexValue, char * varname);
 int getOpType(int op);
 int getBaseType(int op);
@@ -117,12 +116,12 @@ ExprEval evaluate_unary_expression(AstNode* node) {
     int child_type = node->unary_expr.right->ee.expr_type;
     
     if (node->unary_expr.op == MINUS && child_type != ARITHMETIC_EXPR) {
-        ERROR("Error: Expression after unary \"-\" needs to be arithmetic.\n");
+        ERROR("Error(line %i): Expression after unary \"-\" needs to be arithmetic.\n", node->line);
         return ExprError;
     }
 
     if (node->unary_expr.op == NOT && child_type != LOGICAL_EXPR) {
-        ERROR("Error: Expression after unary \"!\" needs to be logical.\n");
+        ERROR("Error(line %i): Expression after unary \"!\" needs to be logical.\n", node->line);
         return ExprError;
     }
 
@@ -151,13 +150,13 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Arithemtic operands also need to be arithemetic.
         if (left_ee.expr_type != ARITHMETIC_EXPR ||
             right_ee.expr_type != ARITHMETIC_EXPR) {
-            ERROR("Error: Both operands of arithmetic operator needs to be arithmetic.\n");
+            ERROR("Error(line %i): Both operands of arithmetic operator needs to be arithmetic.\n", node->line);
             return ExprError;
         }
         
         // Left & right base types need to be the same.
         if (left_ee.base_type != right_ee.base_type) {
-            ERROR("Error: Operands of arithmetic operator needs to be of the same base type.\n");
+            ERROR("Error(line %i): Operands of arithmetic operator needs to be of the same base type.\n", node->line);
             return ExprError;
         }
         
@@ -183,7 +182,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
             // None of the class_sizes are 1. Means we have 2 vectors
             // and their sizes need to match in this case.
             if (left_ee.class_size != right_ee.class_size) {
-                ERROR("Error: Operands of \"*\" are vectors of different sizes.\n");
+                ERROR("Error(line %i): Operands of \"*\" are vectors of different sizes.\n", node->line);
                 return ExprError;
             }
 
@@ -194,7 +193,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         // Accept ss only.
         if (op == DIV || op == POWER) {
             if (left_ee.class_size != 1 || right_ee.class_size != 1) {
-                ERROR("Error: Vectors are not accepted for \"/\" or \"^\".\n");
+                ERROR("Error(line %i): Vectors are not accepted for \"/\" or \"^\".\n", node->line);
                 return ExprError;
             }
             return (ExprEval) {false, ARITHMETIC_EXPR, base_type, 1};
@@ -208,13 +207,13 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     if (op_type == LOGICAL_OP) {
         // Must have boolean logical operands.
         if (left_ee.expr_type != LOGICAL_EXPR || right_ee.expr_type != LOGICAL_EXPR) {
-            ERROR("Error: Operands of a logical operator needs to be of logical types.\n");
+            ERROR("Error(line %i): Operands of a logical operator needs to be of logical types.\n", node->line);
             return ExprError;
         }
 
         // ss or vv
         if (left_ee.class_size != right_ee.class_size) {
-            ERROR("Error: Operands of a logical operator needs to be scalar-scalar of vectors of same size\n");
+            ERROR("Error(line %i): Operands of a logical operator needs to be scalar-scalar of vectors of same size\n", node->line);
             return ExprError;
         }
 
@@ -225,18 +224,18 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     if (op_type == COMPARISON_OP) {
         // All operands must be arithmetic.
         if (left_ee.expr_type != ARITHMETIC_EXPR || right_ee.expr_type != ARITHMETIC_EXPR) {
-            ERROR("Error: Operands of a comparison operator needs to be arithmetic.\n");
+            ERROR("Error(line %i): Operands of a comparison operator needs to be arithmetic.\n", node->line);
             return ExprError;
         }
         
         // Base types need to be the same.
         if (left_ee.base_type != right_ee.base_type) {
-            ERROR("Error: Operands of a comparison operator needs to have the same arithmetic base type.\n");
+            ERROR("Error(line %i): Operands of a comparison operator needs to have the same arithmetic base type.\n", node->line);
             return ExprError;
         }
         
         if (left_ee.class_size != right_ee.class_size) {
-            ERROR("Error: Operands of a comparison operator needs to be scalar-scalar or vectors of same size.\n");
+            ERROR("Error(line %i): Operands of a comparison operator needs to be scalar-scalar or vectors of same size.\n", node->line);
             return ExprError;
         }
 
@@ -246,7 +245,7 @@ ExprEval evaluate_binary_expression(AstNode* node) {
         
         // For other operators, only ss accepted.
         if (left_ee.class_size != 1) {
-            ERROR("Error: Operands of comparison operator that is not \"==\" or \"!=\" needs to be scalar-scalar.\n");
+            ERROR("Error(line %i): Operands of comparison operator that is not \"==\" or \"!=\" needs to be scalar-scalar.\n", node->line);
             return ExprError;
         }
 
@@ -285,9 +284,9 @@ bool IsVector(int t) {
            t == BVEC2_T || t == BVEC3_T || t == BVEC4_T;
 }
 
-void CheckVectorIndex(int type_code, int index) {
+void CheckVectorIndex(int type_code, int index, int line){
     if (index < 0) {
-        ERROR("Error: Index can not be < 0.\n");
+        ERROR("Error(line %i): Index can not be < 0.\n", line);
         return;
     }
 
@@ -306,7 +305,7 @@ void CheckVectorIndex(int type_code, int index) {
     if (index < bound)
         return;
 
-    ERROR("Error: Index out of bound: %i\n", index);
+    ERROR("Error(line %i): Index out of bound: %i\n", line, index);
 }
 
 void semantic_check_node(AstNode* node) {
@@ -317,6 +316,8 @@ void semantic_check_node(AstNode* node) {
     node->ee.expr_type = -1;
     node->ee.base_type = -1;
     node->ee.class_size = -1;
+
+    int line = node->line;
 
     switch(node->kind) {
         case INT_NODE: // Needs to set ExprEval.
@@ -359,14 +360,14 @@ void semantic_check_node(AstNode* node) {
 			addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const, initiated);
 		}
 		else{
-			ERROR("\nError redecleartion of variable %s in same scope\n",node->declaration.id);
+			ERROR("\nError(line %i): redecleartion of variable %s in same scope\n", line, node->declaration.id);
 		}
             break;
 
         case VAR_NODE: {// Needs to set ExprEval.
             // Check 1: Variable exists on symbol table, fetch its type and populate ExprEval.
             if (!doesVarExist(node->variable.id)) {
-                ERROR("Error: variable %s does not exist in symbol table.\n", node->variable.id);
+                ERROR("Error(line %i): variable %s does not exist in symbol table.\n", line, node->variable.id);
             } else {
                 node->variable.var_type = getVarType(node->variable.id);
                 node->ee = typeToEE(node->variable.var_type);
@@ -374,7 +375,7 @@ void semantic_check_node(AstNode* node) {
 
             // Check 2: If variable is a vector, check that index does not go out of bound.
             if (IsVector(node->variable.var_type)) {
-                CheckVectorIndex(node->variable.var_type, node->variable.index);
+                CheckVectorIndex(node->variable.var_type, node->variable.index, line);
             }
 
             break;
@@ -388,7 +389,7 @@ void semantic_check_node(AstNode* node) {
             break;
         // We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
 		if(node->if_statement.condition->ee.expr_type != LOGICAL_EXPR){
-		    ERROR("Error: expression in if statement is not a bool type\n");
+		    ERROR("Error(line %i): expression in if statement is not a bool type\n", line);
 		}
 		break;
 
@@ -401,13 +402,13 @@ void semantic_check_node(AstNode* node) {
                     set_initiated(variableNode->variable.id);
 			}
 			else{
-				ERROR("Error: Assigning a value to a read-only variable\n");
+				ERROR("Error(line %i): Assigning a value to a read-only variable\n", line);
 			}
 
 			// int varType = variableNode->type.type; 
 		}
 		else{
-			ERROR("Error: In ASSIGNMENT_NODE variable %s does not exist in symbol table.\n", variableNode->variable.id);
+			ERROR("Error(line %i): In ASSIGNMENT_NODE variable %s does not exist in symbol table.\n", line, variableNode->variable.id);
 		}
 		break;
 
@@ -420,7 +421,7 @@ void semantic_check_node(AstNode* node) {
 			if(argTypeCheck(getBaseType(node->constructor.type->type.type), node->function.arguments)){
 
 			                        if(!argSizeCheck(1,node->function.arguments)){
-			                                ERROR("Error: Improper arguments provided to constructor\n");
+			                                ERROR("Error(line %i): Improper arguments provided to constructor\n", line);
 						}
 
 
@@ -428,12 +429,12 @@ void semantic_check_node(AstNode* node) {
 			} 
 
 			else{
-				ERROR("Error: Improper arguments to constructor \n");
+				ERROR("Error(line %i): Improper arguments to constructor \n", line);
 			}
 		}
 
 		else{
-			ERROR("Error: Improper amount of arguments provided\n");
+			ERROR("Error(line %i): Improper amount of arguments provided\n", line);
 		}
 
 
@@ -449,16 +450,16 @@ void semantic_check_node(AstNode* node) {
                         if(numArgs == 1){
 				if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
 					if(!argSizeCheck(1,node->function.arguments)){
-						ERROR("Error: Improper arguments to function RSQ\n");
+						ERROR("Error(line %i): Improper arguments to function RSQ\n", line);
 
 					}
 				}
 				else{
-					ERROR("Error: Improper arguments to function RSQ\n");
+					ERROR("Error(line %i): Improper arguments to function RSQ\n", line);
 				}
                         }
                         else{
-                                ERROR("Error: Improper amount of arguments to function RSQ \n");
+                                ERROR("Error(line %i): Improper amount of arguments to function RSQ \n", line);
                         }
 		}
                else if(!strcmp(node->function.name,"DP3")){
@@ -466,15 +467,15 @@ void semantic_check_node(AstNode* node) {
                         if(numArgs == 2){
                                 if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
 					if(!argSizeCheck(3,node->function.arguments) && !argSizeCheck(4,node->function.arguments)){
-	                                        ERROR("Error: Improper arguments to function DP3\n");
+	                                        ERROR("Error(line %i): Improper arguments to function DP3\n", line);
 					} 
                                 }
                                 else{
-                                        ERROR("Error: Improper arguments to function DP3\n");
+                                        ERROR("Error(line %i): Improper arguments to function DP3\n", line);
                                 }
                         }
                         else{
-                                ERROR("Error: Improper amount of arguments to function DP3\n");
+                                ERROR("Error(line %i): Improper amount of arguments to function DP3\n", line);
                         }
                 }
                else if(!strcmp(node->function.name,"LIT")){
@@ -484,20 +485,20 @@ void semantic_check_node(AstNode* node) {
 				if(argTypeCheck(FLOAT_T, node->function.arguments)){
 
                                         if(!argSizeCheck(4,node->function.arguments)){
-                                            ERROR("Error: Improper arguments to function LIT\n");
+                                            ERROR("Error(line %i): Improper arguments to function LIT\n", line);
 					}
 				}
 				else{
-                                	ERROR("Error: Improper arguments to function LIT\n");
+                                	ERROR("Error(line %i): Improper arguments to function LIT\n", line);
 				}
 			}
 			else{
-				ERROR("Error: Improper amount of arguments to function LIT \n");
+				ERROR("Error(line %i): Improper amount of arguments to function LIT \n", line);
 			}
                 }
 
 		else{
-			ERROR("Error: Invalid Function\n");
+			ERROR("Error(line %i): Invalid Function\n", line);
 		}
             break;
             }
@@ -665,29 +666,6 @@ int getClassSize(int var_type) {
         return 1;
     
     return 0; // Error.
-}
-
-int checkVectorIndex(int indexValue, int operandType){
-
-	if (indexValue < 0){
-		ERROR("\nInavlid index Value\n");
-		return 0;
-	}
-
-
-	if(operandType == VEC4_T || operandType == IVEC4_T ||operandType == BVEC4_T ){
-		return indexValue < 4;
-	}
-
-	if(operandType == VEC3_T || operandType == IVEC3_T ||operandType == BVEC3_T ){
-                return indexValue < 3;
-        }
-
-	if(operandType == VEC2_T || operandType == IVEC2_T ||operandType == BVEC2_T ){
-                return indexValue < 2;
-        }
-	ERROR("\nThese is a issue yo\n");
-	return 0;
 }
 
 int checkPredefinedVectorIndex(int indexValue, char * varname){
