@@ -23,17 +23,21 @@ int getClassSize(int type);
 
 int ExprNodeToType(AstNode* node);
 
-int isReadOnly(char * varname){
+int isReadOnly(char * varname, int line){
 
     if(predefinedVarnameCheck(varname)){
         if(!strcmp(varname,"gl_FragColor") || !strcmp(varname,"gl_FragDepth")){
             return 0;
         }
+        ERROR("Error(line %i): Assigning a value to a read-only variable %s\n", line,varname);
         return 1;
     }
 
     if(doesVarExist(varname)){
         int isConst = getConstType(varname);
+	if(isConst){
+ 	       ERROR("Error(line %i): Assigning a value to const variable %s\n", line,varname);
+	}
         return isConst;
     }
 
@@ -517,7 +521,7 @@ void semantic_check_node(AstNode* node) {
         case ASSIGNMENT_NODE:{
                                  AstNode * variableNode = node->assignment.variable;
                                  if(doesVarExist(variableNode->variable.id)) {
-                                     if(!isReadOnly(variableNode->variable.id)) {
+                                     if(!isReadOnly(variableNode->variable.id,variableNode->line)) {
                                          int lhs_type = ExprNodeToType(variableNode);
                                          int rhs_type = ExprNodeToType(node->assignment.expression);
 					if(writeOnlyCheck(node->assignment.expression)){
@@ -530,9 +534,7 @@ void semantic_check_node(AstNode* node) {
                                          if(!predefinedVarnameCheck(variableNode->variable.id))
                                              set_initiated(variableNode->variable.id);
                                      }
-                                     else{
-                                         ERROR("Error(line %i): Assigning a value to a read-only variable\n", line);
-                                     }
+                                     
 
                                      // int varType = variableNode->type.type; 
                                  }
