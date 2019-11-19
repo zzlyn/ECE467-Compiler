@@ -62,6 +62,7 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
     AstNode * node = givenNode;        
     while(node != NULL){
         ExprEval ee = node->arguments.expression->ee;
+	printf("Type to check is %d . Arg type is %d\n",typeToCheck, ee.base_type);
         if(typeToCheck != ee.base_type){
             return 0;
         }
@@ -265,14 +266,14 @@ ExprEval typeToEE(int type) {
 
 int funcNameToRetType(char* func_name) {
     std::string name(func_name);
-
-    if (name == "rsq")
+	printf("Name is %s \n",func_name);
+    if (name == "RSQ")
         return FLOAT_T;
 
-    if (name == "dp3")
+    if (name == "DP3")
         return FLOAT_T;
 
-    if (name == "lit")
+    if (name == "LIT")
         return VEC4_T;
 
     return -1; // Error.
@@ -443,9 +444,8 @@ void semantic_check_node(AstNode* node) {
         case FUNCTION_NODE: {// Needs to set ExprEvalal.
                                 int func_type = funcNameToRetType(node->function.name);
                                 node->ee = typeToEE(func_type);
-
+				printf("Type is %d\n",node->ee.base_type);
                                 if(!strcmp(node->function.name,"RSQ")){
-
                                     int numArgs = getNumArgs(node->function.arguments);
                                     if(numArgs == 1){
                                         if(argTypeCheck(INT_T, node->function.arguments) || argTypeCheck(FLOAT_T, node->function.arguments)){
@@ -479,7 +479,7 @@ void semantic_check_node(AstNode* node) {
                                     }
                                 }
                                 else if(!strcmp(node->function.name,"LIT")){
-
+					node->ee.class_size = 4;
                                     int numArgs = getNumArgs(node->function.arguments);
                                     if(numArgs == 1){
                                         if(argTypeCheck(FLOAT_T, node->function.arguments)){
