@@ -23,17 +23,21 @@ int getClassSize(int type);
 
 int ExprNodeToType(AstNode* node);
 
-int isReadOnly(char * varname){
+int isReadOnly(char * varname, int line){
 
     if(predefinedVarnameCheck(varname)){
         if(!strcmp(varname,"gl_FragColor") || !strcmp(varname,"gl_FragDepth")){
             return 0;
         }
+        ERROR("Error(line %i): Assigning a value to a read-only variable %s\n", line,varname);
         return 1;
     }
 
     if(doesVarExist(varname)){
         int isConst = getConstType(varname);
+	if(isConst){
+ 	       ERROR("Error(line %i): Assigning a value to const variable %s\n", line,varname);
+	}
         return isConst;
     }
 
@@ -52,6 +56,17 @@ int isWriteOnly(char * varname){
 }
 
 
+int writeOnlyCheck(AstNode * node){
+
+	if(node->kind == VAR_NODE){
+		if(isWriteOnly(node->variable.id)){
+			return 1;
+		}
+	}
+	return 0;	
+} 
+
+
 
 int getNumArgs(AstNode * node){
     int count = 0;
@@ -68,12 +83,10 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
     while(node != NULL){
         ExprEval ee = node->arguments.expression->ee;
 	if(node->arguments.expression->kind  == VAR_NODE){
-		if(isWriteOnly(node->arguments.expression->variable.id) && errorOccurred == 0 ){
+		if(writeOnlyCheck(node->arguments.expression) && errorOccurred == 0 ){
 			ERROR("Error: Reading from write only variable on line %d\n",node->arguments.expression->line);
 		}
 		
-
-
 	}
 
         if(typeToCheck != ee.base_type){
@@ -144,6 +157,12 @@ ExprEval evaluate_unary_expression(AstNode* node) {
         return ExprError;
     }
 
+	if(writeOnlyCheck(node->unary_expr.right)){
+		ERROR("Error: Reading from write only varibale\n");
+	}
+
+
+
     // Type and class simply inherit from right expr.
     return (ExprEval) {.has_error = false, .expr_type = child_type, .base_type = node->unary_expr.right->ee.base_type, .class_size=node->unary_expr.right->ee.class_size};
 }
@@ -163,6 +182,19 @@ ExprEval evaluate_binary_expression(AstNode* node) {
 
     int op = node->binary_expr.op;
     int op_type = getOpType(op);
+
+
+       if(writeOnlyCheck(node->binary_expr.left)){
+                ERROR("Error: Reading from write only variable. Left operand is write only. Line %d\n",node->binary_expr.left->line);
+                return ExprError;
+        }
+
+       if(writeOnlyCheck(node->binary_expr.right)){
+                ERROR("Error: Reading from write only variable. Right operand is write only.Line %d\n",node->binary_expr.right->line);
+                return ExprError;
+        }
+
+
 
     // Case 1: Arithmetic.
     if (op_type == ARITHMETIC_OP) {
@@ -475,6 +507,9 @@ void semantic_check_node(AstNode* node) {
                        break;
 
         case IF_STATEMENT_NODE:
+			if(writeOnlyCheck(node->if_statement.condition)){
+				ERROR("Error: Reading from write only variable. On line %d\n",node->if_statement.condition->line);
+			}
                        if(node->if_statement.condition->ee.has_error)
                            break;
                        // We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
@@ -486,18 +521,20 @@ void semantic_check_node(AstNode* node) {
         case ASSIGNMENT_NODE:{
                                  AstNode * variableNode = node->assignment.variable;
                                  if(doesVarExist(variableNode->variable.id)) {
-                                     if(!isReadOnly(variableNode->variable.id)) {
+                                     if(!isReadOnly(variableNode->variable.id,variableNode->line)) {
                                          int lhs_type = ExprNodeToType(variableNode);
                                          int rhs_type = ExprNodeToType(node->assignment.expression);
+					if(writeOnlyCheck(node->assignment.expression)){
+	                	                ERROR("Error: Reading from write only variable. On line %d \n",node->assignment.expression->line);
+        		                }
+
                                          if (lhs_type != rhs_type)
                                              ERROR("Error(line %i): LHS and RHS of the assignment do not have equivalent types (%s != %s).\n", line, var_type_to_str(lhs_type).c_str(), var_type_to_str(rhs_type).c_str());
                                          // Set initiated to true.
                                          if(!predefinedVarnameCheck(variableNode->variable.id))
                                              set_initiated(variableNode->variable.id);
                                      }
-                                     else{
-                                         ERROR("Error(line %i): Assigning a value to a read-only variable\n", line);
-                                     }
+                                     
 
                                      // int varType = variableNode->type.type; 
                                  }
