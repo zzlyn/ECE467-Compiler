@@ -310,6 +310,55 @@ void CheckVectorIndex(int type_code, int index, int line){
     ERROR("Error(line %i): Index out of bound: %i\n", line, index);
 }
 
+int ExprEvalToType(ExprEval ee, int deref) {
+    int base = ee.base_type;
+    int size = ee.class_size;
+
+    if (base == INT_T) {
+        if (deref || size < 2)
+            return INT_T;
+        if (size == 2)
+            return IVEC2_T;
+        if (size == 3)
+            return IVEC3_T;
+        if (size == 4)
+            return IVEC4_T;
+    }
+
+    if (base == FLOAT_T) {
+        if (deref ||size < 2)
+            return FLOAT_T;
+        if (size == 2)
+            return VEC2_T;
+        if (size == 3)
+            return VEC3_T;
+        if (size == 4)
+            return VEC4_T;
+    }
+
+    if (base == BOOL_T) {
+        if (deref || size < 2)
+            return BOOL_T;
+        if (size == 2)
+            return BVEC2_T;
+        if (size == 3)
+            return BVEC3_T;
+        if (size == 4)
+            return BVEC4_T;
+    }
+
+    return -1; // Error
+}
+
+int ExprNodeToType(AstNode* var_node) {
+    int deref;
+    if (var_node->kind != VAR_NODE)
+        deref = 0;
+    else
+        deref = var_node->variable.deref;
+    return ExprEvalToType(var_node->ee, deref);
+}
+
 void semantic_check_node(AstNode* node) {
     if (node == NULL) return;
 
@@ -355,16 +404,26 @@ void semantic_check_node(AstNode* node) {
             break;
 
             // Rupan Start here
-        case DECLARATION_NODE:
-            if( varnameCanBeDeclared(node->declaration.id)){
-                bool initiated = (AstNode*)node->declaration.expression != (AstNode*)NULL;
-                // Ask on piazza and decide const checks.
-                addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const, initiated);
-            }
-            else{
-                ERROR("\nError(line %i): redecleartion of variable %s in same scope\n", line, node->declaration.id);
-            }
-            break;
+        case DECLARATION_NODE: {
+                                   // Type coherence check.
+                                   if (node->declaration.expression) {
+                                       int type_lhs = node->declaration.type->type.type;
+                                       int type_rhs = ExprNodeToType(node->declaration.expression);
+                                       if (type_lhs != type_rhs)
+                                           ERROR("Error(line %i): LHS and RHS of the declaration do not have equivalent types (%s != %s).\n", line, var_type_to_str(type_lhs).c_str(), var_type_to_str(type_rhs).c_str());
+                                   }
+
+                                   // Predefined/const checks.
+                                   if( varnameCanBeDeclared(node->declaration.id)){
+                                       bool initiated = (AstNode*)node->declaration.expression != (AstNode*)NULL;
+                                       // Ask on piazza and decide const checks.
+                                       addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const, initiated);
+                                   }
+                                   else{
+                                       ERROR("Error(line %i): redecleartion of variable %s in same scope\n", line, node->declaration.id);
+                                   }
+                                   break;
+                               }
 
         case VAR_NODE: {// Needs to set ExprEval.
                            // Check 1: Variable exists on symbol table, fetch its type and populate ExprEval.
@@ -399,6 +458,10 @@ void semantic_check_node(AstNode* node) {
                                  AstNode * variableNode = node->assignment.variable;
                                  if(doesVarExist(variableNode->variable.id)) {
                                      if(!isReadOnly(variableNode->variable.id)) {
+                                         int lhs_type = ExprNodeToType(variableNode);
+                                         int rhs_type = ExprNodeToType(node->assignment.expression);
+                                         if (lhs_type != rhs_type)
+                                             ERROR("Error(line %i): LHS and RHS of the assignment do not have equivalent types (%s != %s).\n", line, var_type_to_str(lhs_type).c_str(), var_type_to_str(rhs_type).c_str());
                                          // Set initiated to true.
                                          if(!predefinedVarnameCheck(variableNode->variable.id))
                                              set_initiated(variableNode->variable.id);
@@ -479,7 +542,7 @@ void semantic_check_node(AstNode* node) {
                                     }
                                 }
                                 else if(!strcmp(node->function.name,"LIT")){
-					node->ee.class_size = 4;
+                                    node->ee.class_size = 4;
                                     int numArgs = getNumArgs(node->function.arguments);
                                     if(numArgs == 1){
                                         if(argTypeCheck(FLOAT_T, node->function.arguments)){
