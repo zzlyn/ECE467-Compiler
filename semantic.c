@@ -11,16 +11,13 @@
 #define SCALAR 3
 #define VECTOR  4
 
-#define FIRST_ERROR_ONLY true
-
-#define ERROR(...) if(!(FIRST_ERROR_ONLY && errorOccurred)) { fprintf(errorFile, __VA_ARGS__); errorOccurred = 1; }
+#define ERROR(...) { fprintf(errorFile, __VA_ARGS__); errorOccurred = 1; }
 
 int checkVectorIndex(int indexValue, int operandType);
 int checkPredefinedVectorIndex(int indexValue, char * varname);
 int getOpType(int op);
 int getBaseType(int op);
 int getClassSize(int type);
-
 
 int isReadOnly(char * varname){
 
@@ -86,10 +83,6 @@ int argSizeCheck(int sizeToCheck, AstNode * givenNode){
         }
         return 1;
 }
-
-
-
-
 
 int numArgsConstruct(int type){
 
@@ -387,7 +380,9 @@ void semantic_check_node(AstNode* node) {
             break;
 
         case IF_STATEMENT_NODE:
-		// We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
+		if(node->if_statement.condition->ee.has_error)
+            break;
+        // We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
 		if(node->if_statement.condition->ee.expr_type != LOGICAL){
 		    ERROR("Error: expression in if statement is not a bool type\n");
 		}
@@ -575,7 +570,7 @@ int getOpType(int op){
                 return COMPARISON;
         }
 
-	if (op == NOT || op == AND || op == OR ){
+	if (op == AND || op == OR ){
                 return LOGICAL;
         }
 
