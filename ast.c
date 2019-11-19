@@ -347,6 +347,11 @@ void print_indentation() {
         PRINT_DUMP("  ");
 }
 
+bool is_inline(node* n) {
+    int k = n->kind;
+    return k == PROGRAM_NODE || k == SCOPE_NODE || k == DECLARATIONS_NODE || k == STATEMENTS_NODE; // || k == IF_STATEMENT_NODE;
+}
+
 void ast_print(node *n) {
 
     if (n == NULL) {
@@ -412,7 +417,8 @@ void ast_print(node *n) {
 
                                     AstNode* tmp = n;
                                     while(tmp != NULL) {
-                                        print_indentation();
+                                        if(!is_inline(tmp->declarations.declaration))
+                                            print_indentation();
                                         ast_print(tmp->declarations.declaration);
                                         tmp = tmp->declarations.declarations;
                                     }
@@ -440,7 +446,8 @@ void ast_print(node *n) {
 
                                   AstNode* tmp = n;
                                   while(tmp != NULL) {
-                                      print_indentation();
+                                      if (!is_inline(tmp->statements.statement))
+                                        print_indentation();
                                       ast_print(tmp->statements.statement);
                                       tmp = tmp->statements.statements;
                                   }
@@ -509,7 +516,8 @@ void ast_print(node *n) {
 
                                      if (n->if_statement.else_statement != NULL) {
                                          indentation--;
-                                         print_indentation();
+                                         if (!is_inline(n->if_statement.else_statement))
+                                            print_indentation();
                                          PRINT_DUMP(" ELSE\n");
                                          indentation++;
 
