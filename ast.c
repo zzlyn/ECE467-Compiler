@@ -17,112 +17,112 @@ extern int yyline;
 node *ast = NULL;
 
 node *ast_allocate(node_kind kind, ...) {
-  va_list args;
+    va_list args;
 
-  // make the node
-  ast = (AstNode *) malloc(sizeof(AstNode));
-  memset(ast, 0, sizeof *ast);
-  ast->kind = kind;
-  ast->line = yyline;
+    // make the node
+    ast = (AstNode *) malloc(sizeof(AstNode));
+    memset(ast, 0, sizeof *ast);
+    ast->kind = kind;
+    ast->line = yyline;
 
-  va_start(args, kind); 
+    va_start(args, kind); 
 
-  switch(kind) {
-  
-      case INT_NODE:
-          ast->integer.val = va_arg(args, int);
-          break;
+    switch(kind) {
 
-      case FLOAT_NODE:
-          ast->float_num.val = va_arg(args, double);
-          break;
+        case INT_NODE:
+            ast->integer.val = va_arg(args, int);
+            break;
 
-      case BOOL_NODE:
-          ast->boolean.val = va_arg(args, int);
-          break;
+        case FLOAT_NODE:
+            ast->float_num.val = va_arg(args, double);
+            break;
 
-      case PROGRAM_NODE:
-          ast->program.scope = va_arg(args, node*);
-          break;
+        case BOOL_NODE:
+            ast->boolean.val = va_arg(args, int);
+            break;
 
-      case SCOPE_NODE:
-          ast->scope.declarations = va_arg(args, node*);
-          ast->scope.statements = va_arg(args, node*);
-          break;
+        case PROGRAM_NODE:
+            ast->program.scope = va_arg(args, node*);
+            break;
 
-      case DECLARATIONS_NODE:
-          ast->declarations.declarations = va_arg(args, node*);
-          ast->declarations.declaration = va_arg(args, node*);
-          break;
+        case SCOPE_NODE:
+            ast->scope.declarations = va_arg(args, node*);
+            ast->scope.statements = va_arg(args, node*);
+            break;
 
-      case STATEMENTS_NODE:
-          ast->statements.statements = va_arg(args, node*);
-          ast->statements.statement = va_arg(args, node*);
-          break;
+        case DECLARATIONS_NODE:
+            ast->declarations.declarations = va_arg(args, node*);
+            ast->declarations.declaration = va_arg(args, node*);
+            break;
 
-      case UNARY_EXPRESSION_NODE:
-          ast->unary_expr.op = va_arg(args, int);
-          ast->unary_expr.right = va_arg(args, node*);
-          break;
-    
-      case BINARY_EXPRESSION_NODE:
-          ast->binary_expr.op = va_arg(args, int);
-          ast->binary_expr.left = va_arg(args, node*);
-          ast->binary_expr.right = va_arg(args, node*);
-          break;
+        case STATEMENTS_NODE:
+            ast->statements.statements = va_arg(args, node*);
+            ast->statements.statement = va_arg(args, node*);
+            break;
 
-      case DECLARATION_NODE:
-          ast->declaration.is_const = va_arg(args, int);
-          ast->declaration.type = va_arg(args, node*);
-          ast->declaration.id = va_arg(args, char*);
-          ast->declaration.expression = va_arg(args, node*);
-          break;
+        case UNARY_EXPRESSION_NODE:
+            ast->unary_expr.op = va_arg(args, int);
+            ast->unary_expr.right = va_arg(args, node*);
+            break;
 
-      case VAR_NODE:
-          ast->variable.is_const = va_arg(args, int);
-          ast->variable.id = va_arg(args, char*);
-          ast->variable.index = va_arg(args, int);
-          ast->variable.deref = va_arg(args, int);
-          break;
+        case BINARY_EXPRESSION_NODE:
+            ast->binary_expr.op = va_arg(args, int);
+            ast->binary_expr.left = va_arg(args, node*);
+            ast->binary_expr.right = va_arg(args, node*);
+            break;
 
-      case TYPE_NODE:
-          ast->type.type = va_arg(args, int);
-          ast->type.to_str = va_arg(args, char*);
-          break;
+        case DECLARATION_NODE:
+            ast->declaration.is_const = va_arg(args, int);
+            ast->declaration.type = va_arg(args, node*);
+            ast->declaration.id = va_arg(args, char*);
+            ast->declaration.expression = va_arg(args, node*);
+            break;
 
-      case IF_STATEMENT_NODE:
-          ast->if_statement.condition = va_arg(args, node*);
-          ast->if_statement.statement = va_arg(args, node*);
-          ast->if_statement.else_statement = va_arg(args, node*);
-          break;
+        case VAR_NODE:
+            ast->variable.is_const = va_arg(args, int);
+            ast->variable.id = va_arg(args, char*);
+            ast->variable.index = va_arg(args, int);
+            ast->variable.deref = va_arg(args, int);
+            break;
 
-      case ASSIGNMENT_NODE:
-          ast->assignment.variable = va_arg(args, node*);
-          ast->assignment.expression = va_arg(args, node*);
-          break;
+        case TYPE_NODE:
+            ast->type.type = va_arg(args, int);
+            ast->type.to_str = va_arg(args, char*);
+            break;
 
-      case CONSTRUCTOR_NODE:
-          ast->constructor.type = va_arg(args, node*);
-          ast->constructor.arguments = va_arg(args, node*);
-          break;
+        case IF_STATEMENT_NODE:
+            ast->if_statement.condition = va_arg(args, node*);
+            ast->if_statement.statement = va_arg(args, node*);
+            ast->if_statement.else_statement = va_arg(args, node*);
+            break;
 
-      case FUNCTION_NODE:
-          ast->function.name = va_arg(args, char*);
-          ast->function.arguments = va_arg(args, node*);
-          break;
+        case ASSIGNMENT_NODE:
+            ast->assignment.variable = va_arg(args, node*);
+            ast->assignment.expression = va_arg(args, node*);
+            break;
 
-      case ARGUMENTS_NODE:
-          ast->arguments.arguments = va_arg(args, node*);
-          ast->arguments.expression = va_arg(args, node*);
-          break;
+        case CONSTRUCTOR_NODE:
+            ast->constructor.type = va_arg(args, node*);
+            ast->constructor.arguments = va_arg(args, node*);
+            break;
 
-  default: break;
-  
-  }
+        case FUNCTION_NODE:
+            ast->function.name = va_arg(args, char*);
+            ast->function.arguments = va_arg(args, node*);
+            break;
 
-  va_end(args);
+        case ARGUMENTS_NODE:
+            ast->arguments.arguments = va_arg(args, node*);
+            ast->arguments.expression = va_arg(args, node*);
+            break;
 
-  return ast;
+        default: break;
+
+    }
+
+    va_end(args);
+
+    return ast;
 }
 
 std::string var_type_to_str(int var_type) {
@@ -192,151 +192,151 @@ std::string binary_op_to_str(int op) {
     switch (op) {
 
         case EQ: {
-            str = "==";
-            break;
+                     str = "==";
+                     break;
                  }
 
         case NE: {
-            str = "!=";
-            break;}
+                     str = "!=";
+                     break;}
 
         case LT: {
-            str = "<";
-            break;}
+                     str = "<";
+                     break;}
 
         case LE: {
-            str = "<=";
-            break;}
+                     str = "<=";
+                     break;}
 
         case GT: {
-            str = ">";
-            break;}
+                     str = ">";
+                     break;}
 
         case GE: {
-            str = ">=";
-            break;}
+                     str = ">=";
+                     break;}
 
         case AND: {
-            str = "&&";
-            break;}
+                      str = "&&";
+                      break;}
 
         case OR: {
-            str = "||";
-            break;}
+                     str = "||";
+                     break;}
 
         case PLUS: {
-            str = "+";
-            break;}
+                       str = "+";
+                       break;}
 
         case MINUS:{ 
-            str = "-";
-            break;}
-            
+                       str = "-";
+                       break;}
+
         case MUL: {
-            str = "*";
-            break;}
+                      str = "*";
+                      break;}
 
         case DIV: {
-            str = "/";
-            break;}
+                      str = "/";
+                      break;}
 
         case POWER:{ 
-            str = "^";
-            break;}
+                       str = "^";
+                       break;}
 
         default: {
-            str = "";
-            break;}
+                     str = "";
+                     break;}
     }
     return str;
 }
 
 void ast_traverse_post(node *ast, NodeFunc post_call) {
-    
+
     if (ast == NULL) {
         return;
     }
 
     switch(ast->kind) {
-      case INT_NODE:
-          break;
+        case INT_NODE:
+            break;
 
-      case FLOAT_NODE:
-          break;
-    
-      case BOOL_NODE:
-          break;
+        case FLOAT_NODE:
+            break;
 
-      case PROGRAM_NODE:
-          ast_traverse_post(ast->program.scope, post_call);
-          break;
+        case BOOL_NODE:
+            break;
 
-      case SCOPE_NODE:
-          addScope();
-          ast_traverse_post(ast->scope.declarations, post_call);
-          ast_traverse_post(ast->scope.statements, post_call);
-          break;
+        case PROGRAM_NODE:
+            ast_traverse_post(ast->program.scope, post_call);
+            break;
 
-      case DECLARATIONS_NODE:
-          ast_traverse_post(ast->declarations.declarations, post_call);
-          ast_traverse_post(ast->declarations.declaration, post_call);
-          break;
+        case SCOPE_NODE:
+            addScope();
+            ast_traverse_post(ast->scope.declarations, post_call);
+            ast_traverse_post(ast->scope.statements, post_call);
+            break;
 
-      case STATEMENTS_NODE:
-          ast_traverse_post(ast->statements.statements, post_call);
-          ast_traverse_post(ast->statements.statement, post_call);
-          break;
+        case DECLARATIONS_NODE:
+            ast_traverse_post(ast->declarations.declarations, post_call);
+            ast_traverse_post(ast->declarations.declaration, post_call);
+            break;
 
-      case UNARY_EXPRESSION_NODE:
-          ast_traverse_post(ast->unary_expr.right, post_call);
-          break;
-    
-      case BINARY_EXPRESSION_NODE:
-          ast_traverse_post(ast->binary_expr.left, post_call);
-          ast_traverse_post(ast->binary_expr.right, post_call);
-          break;
+        case STATEMENTS_NODE:
+            ast_traverse_post(ast->statements.statements, post_call);
+            ast_traverse_post(ast->statements.statement, post_call);
+            break;
 
-      case DECLARATION_NODE:
-          ast_traverse_post(ast->declaration.expression, post_call);
-          break;
+        case UNARY_EXPRESSION_NODE:
+            ast_traverse_post(ast->unary_expr.right, post_call);
+            break;
 
-      case VAR_NODE:
-          break;
+        case BINARY_EXPRESSION_NODE:
+            ast_traverse_post(ast->binary_expr.left, post_call);
+            ast_traverse_post(ast->binary_expr.right, post_call);
+            break;
 
-      case TYPE_NODE:
-          break;
+        case DECLARATION_NODE:
+            ast_traverse_post(ast->declaration.expression, post_call);
+            break;
 
-      case IF_STATEMENT_NODE:
-          // printf("1\n");
-          ast_traverse_post(ast->if_statement.condition, post_call);
-          // printf("2\n");
-          ast_traverse_post(ast->if_statement.statement, post_call);
-          ast_traverse_post(ast->if_statement.else_statement, post_call);
-          break;
+        case VAR_NODE:
+            break;
 
-      case ASSIGNMENT_NODE:
-          ast_traverse_post(ast->assignment.variable, post_call);
-          ast_traverse_post(ast->assignment.expression, post_call);
-          break;
+        case TYPE_NODE:
+            break;
 
-      case CONSTRUCTOR_NODE:
-          ast_traverse_post(ast->constructor.type, post_call);
-          ast_traverse_post(ast->constructor.arguments, post_call);
-          break;
+        case IF_STATEMENT_NODE:
+            // printf("1\n");
+            ast_traverse_post(ast->if_statement.condition, post_call);
+            // printf("2\n");
+            ast_traverse_post(ast->if_statement.statement, post_call);
+            ast_traverse_post(ast->if_statement.else_statement, post_call);
+            break;
 
-      case FUNCTION_NODE:
-          ast_traverse_post(ast->function.arguments, post_call);
-          break;
+        case ASSIGNMENT_NODE:
+            ast_traverse_post(ast->assignment.variable, post_call);
+            ast_traverse_post(ast->assignment.expression, post_call);
+            break;
 
-      case ARGUMENTS_NODE:
-          ast_traverse_post(ast->arguments.arguments, post_call);
-          ast_traverse_post(ast->arguments.expression, post_call);
-          break;
+        case CONSTRUCTOR_NODE:
+            ast_traverse_post(ast->constructor.type, post_call);
+            ast_traverse_post(ast->constructor.arguments, post_call);
+            break;
 
-  // ...
+        case FUNCTION_NODE:
+            ast_traverse_post(ast->function.arguments, post_call);
+            break;
 
-  default: break;
-  }
+        case ARGUMENTS_NODE:
+            ast_traverse_post(ast->arguments.arguments, post_call);
+            ast_traverse_post(ast->arguments.expression, post_call);
+            break;
+
+            // ...
+
+        default: break;
+    }
     if (post_call) post_call(ast);
     if (ast->kind == SCOPE_NODE) { subtractScope(); }
 }
@@ -349,301 +349,301 @@ void print_indentation() {
 }
 
 void ast_print(node *ast) {
-    
+
     if (ast == NULL) {
         return;
     }
 
     switch(ast->kind) {
-      case INT_NODE:
-          PRINT_DUMP("%i", ast->integer.val);
-          break;
+        case INT_NODE:
+            PRINT_DUMP("%i", ast->integer.val);
+            break;
 
-      case FLOAT_NODE:
-          PRINT_DUMP("%f", ast->float_num.val);
-          break;
+        case FLOAT_NODE:
+            PRINT_DUMP("%f", ast->float_num.val);
+            break;
 
-      case BOOL_NODE:
-          if (ast->boolean.val) {
-            PRINT_DUMP("true");
-          } else {
-            PRINT_DUMP("false");
-          }
-          break;
+        case BOOL_NODE:
+            if (ast->boolean.val) {
+                PRINT_DUMP("true");
+            } else {
+                PRINT_DUMP("false");
+            }
+            break;
 
-      case PROGRAM_NODE:
-          PRINT_DUMP("(PROGRAM \n");
-          indentation++;
-          ast_print(ast->program.scope);
-          indentation--;
-          PRINT_DUMP(")\n");
-          break;
+        case PROGRAM_NODE:
+            PRINT_DUMP("(PROGRAM \n");
+            indentation++;
+            ast_print(ast->program.scope);
+            indentation--;
+            PRINT_DUMP(")\n");
+            break;
 
-      case SCOPE_NODE:
-          print_indentation();
-          PRINT_DUMP("(SCOPE \n");
-
-          indentation++;
-
-          ast_print(ast->scope.declarations);
-          // One empty line between to make things look nicer.
-          PRINT_DUMP("\n");
-          ast_print(ast->scope.statements);
-          
-          indentation--;
-          
-          print_indentation();
-          PRINT_DUMP(")\n");
-          break;
-
-      case DECLARATIONS_NODE: {
-          // Reverse declarations order from bottom up to top down.
-          AstNode* prev = NULL;
-          while(ast != NULL) {
-            AstNode* next = ast->declarations.declarations;
-            ast->declarations.declarations = prev;
-            prev = ast;
-            ast = next;
-          }
-          ast = prev;
-
-          print_indentation();
-          PRINT_DUMP("(DECLARATIONS \n");
-          indentation++;
-          
-          AstNode* tmp = ast;
-          while(tmp != NULL) {
+        case SCOPE_NODE:
             print_indentation();
-            ast_print(tmp->declarations.declaration);
-            tmp = tmp->declarations.declarations;
-          }
-          
-          indentation--;
-          print_indentation();
-          PRINT_DUMP(")\n");
-          break;
+            PRINT_DUMP("(SCOPE \n");
+
+            indentation++;
+
+            ast_print(ast->scope.declarations);
+            // One empty line between to make things look nicer.
+            PRINT_DUMP("\n");
+            ast_print(ast->scope.statements);
+
+            indentation--;
+
+            print_indentation();
+            PRINT_DUMP(")\n");
+            break;
+
+        case DECLARATIONS_NODE: {
+                                    // Reverse declarations order from bottom up to top down.
+                                    AstNode* prev = NULL;
+                                    while(ast != NULL) {
+                                        AstNode* next = ast->declarations.declarations;
+                                        ast->declarations.declarations = prev;
+                                        prev = ast;
+                                        ast = next;
+                                    }
+                                    ast = prev;
+
+                                    print_indentation();
+                                    PRINT_DUMP("(DECLARATIONS \n");
+                                    indentation++;
+
+                                    AstNode* tmp = ast;
+                                    while(tmp != NULL) {
+                                        print_indentation();
+                                        ast_print(tmp->declarations.declaration);
+                                        tmp = tmp->declarations.declarations;
+                                    }
+
+                                    indentation--;
+                                    print_indentation();
+                                    PRINT_DUMP(")\n");
+                                    break;
+                                }
+
+        case STATEMENTS_NODE: {
+                                  // Reverse statements order from bottom up to top down.
+                                  AstNode* prev = NULL;
+                                  while(ast != NULL) {
+                                      AstNode* next = ast->statements.statements;
+                                      ast->statements.statements = prev;
+                                      prev = ast;
+                                      ast = next;
+                                  }
+                                  ast = prev;
+
+                                  print_indentation();
+                                  PRINT_DUMP("(STATEMENTS \n");
+                                  indentation++;
+
+                                  AstNode* tmp = ast;
+                                  while(tmp != NULL) {
+                                      print_indentation();
+                                      ast_print(tmp->statements.statement);
+                                      tmp = tmp->statements.statements;
+                                  }
+
+                                  indentation--;
+                                  print_indentation();
+                                  PRINT_DUMP(")\n");
+                                  break;
                               }
 
-      case STATEMENTS_NODE: {
-          // Reverse statements order from bottom up to top down.
-          AstNode* prev = NULL;
-          while(ast != NULL) {
-            AstNode* next = ast->statements.statements;
-            ast->statements.statements = prev;
-            prev = ast;
-            ast = next;
-          }
-          ast = prev;
+        case UNARY_EXPRESSION_NODE: {
+                                        PRINT_DUMP("(UNARY ");
 
-          print_indentation();
-          PRINT_DUMP("(STATEMENTS \n");
-          indentation++;
+                                        std::string type = ast->unary_expr.op == MINUS ? "ARITHMETIC" : "LOGICAL";
+                                        std::string symbol = ast->unary_expr.op == MINUS ? "- " : "! ";
 
-          AstNode* tmp = ast;
-          while(tmp != NULL) {
-            print_indentation();
-            ast_print(tmp->statements.statement);
-            tmp = tmp->statements.statements;
-          }
-          
-          indentation--;
-          print_indentation();
-          PRINT_DUMP(")\n");
-          break;
-                            }
+                                        PRINT_DUMP("%s %s", type.c_str(), symbol.c_str());
+                                        ast_print(ast->unary_expr.right);
+                                        PRINT_DUMP(")");
+                                        break;
+                                    }
 
-      case UNARY_EXPRESSION_NODE: {
-          PRINT_DUMP("(UNARY ");
-          
-          std::string type = ast->unary_expr.op == MINUS ? "ARITHMETIC" : "LOGICAL";
-          std::string symbol = ast->unary_expr.op == MINUS ? "- " : "! ";
+        case BINARY_EXPRESSION_NODE: {
+                                         PRINT_DUMP("(BINARY ");
+                                         // Print type.
+                                         int t = ast->binary_expr.op;
+                                         if (t == PLUS || t == MINUS || t == MUL || t == DIV || t == POWER) {
+                                             PRINT_DUMP("ARITHMETIC ");
+                                         } else {
+                                             PRINT_DUMP("LOGICAL ");
+                                         }
+                                         // Print operation.
+                                         PRINT_DUMP("%s ", binary_op_to_str(t).c_str());
+                                         // Print left and right.
+                                         ast_print(ast->binary_expr.left);
+                                         PRINT_DUMP(" ");
+                                         ast_print(ast->binary_expr.right);
 
-          PRINT_DUMP("%s %s", type.c_str(), symbol.c_str());
-          ast_print(ast->unary_expr.right);
-          PRINT_DUMP(")");
-          break;
-                                  }
-    
-      case BINARY_EXPRESSION_NODE: {
-          PRINT_DUMP("(BINARY ");
-          // Print type.
-          int t = ast->binary_expr.op;
-          if (t == PLUS || t == MINUS || t == MUL || t == DIV || t == POWER) {
-            PRINT_DUMP("ARITHMETIC ");
-          } else {
-            PRINT_DUMP("LOGICAL ");
-          }
-          // Print operation.
-          PRINT_DUMP("%s ", binary_op_to_str(t).c_str());
-          // Print left and right.
-          ast_print(ast->binary_expr.left);
-          PRINT_DUMP(" ");
-          ast_print(ast->binary_expr.right);
+                                         PRINT_DUMP(")");
+                                         break;
+                                     }
 
-          PRINT_DUMP(")");
-          break;
-                                   }
+        case DECLARATION_NODE:
+                                     PRINT_DUMP("(DECLARATION ");
+                                     // variable_name type_name initial_value
+                                     PRINT_DUMP("%s %s ", ast->declaration.id, ast->declaration.type->type.to_str);
+                                     ast_print(ast->declaration.expression);
+                                     PRINT_DUMP(")\n");
+                                     break;
 
-      case DECLARATION_NODE:
-          PRINT_DUMP("(DECLARATION ");
-          // variable_name type_name initial_value
-          PRINT_DUMP("%s %s ", ast->declaration.id, ast->declaration.type->type.to_str);
-          ast_print(ast->declaration.expression);
-          PRINT_DUMP(")\n");
-          break;
+        case VAR_NODE:
+                                     if (!ast->variable.deref) {
+                                         PRINT_DUMP("%s", ast->variable.id);
+                                     } else {
+                                         // INDEX type id index.
+                                         PRINT_DUMP("(INDEX %s %s %i)", var_type_to_str(ast->variable.var_type).c_str(), ast->variable.id, ast->variable.index);
+                                     }
+                                     break;
 
-      case VAR_NODE:
-          if (!ast->variable.deref) {
-            PRINT_DUMP("%s", ast->variable.id);
-          } else {
-            // INDEX type id index.
-            PRINT_DUMP("(INDEX %s %s %i)", var_type_to_str(ast->variable.var_type).c_str(), ast->variable.id, ast->variable.index);
-          }
-          break;
+        case TYPE_NODE:
+                                     break;
 
-      case TYPE_NODE:
-          break;
+        case IF_STATEMENT_NODE:
+                                     PRINT_DUMP("(IF ");
+                                     indentation++;
+                                     ast_print(ast->if_statement.condition);
+                                     PRINT_DUMP("\n");
+                                     print_indentation();
+                                     ast_print(ast->if_statement.statement);
 
-      case IF_STATEMENT_NODE:
-          PRINT_DUMP("(IF ");
-          indentation++;
-          ast_print(ast->if_statement.condition);
-          PRINT_DUMP("\n");
-          print_indentation();
-          ast_print(ast->if_statement.statement);
-          
-          if (ast->if_statement.else_statement != NULL) {
-            indentation--;
-            print_indentation();
-            PRINT_DUMP(" ELSE\n");
-            indentation++;
-            
-            print_indentation();
-            ast_print(ast->if_statement.else_statement);
-          }
-          
-          indentation--;
-          print_indentation();
-          PRINT_DUMP(")\n");
-          break;
+                                     if (ast->if_statement.else_statement != NULL) {
+                                         indentation--;
+                                         print_indentation();
+                                         PRINT_DUMP(" ELSE\n");
+                                         indentation++;
 
-      case ASSIGNMENT_NODE:
-          // ASSIGN type variable_name new_value
-          PRINT_DUMP("(ASSIGN %s %s ", var_type_to_str(ast->assignment.variable->variable.var_type).c_str(),ast->assignment.variable->variable.id);
-          ast_print(ast->assignment.expression);
-          PRINT_DUMP(")\n");
-          break;
+                                         print_indentation();
+                                         ast_print(ast->if_statement.else_statement);
+                                     }
 
-      case CONSTRUCTOR_NODE:
-          PRINT_DUMP("(CALL %s ", ast->constructor.type->type.to_str);
-          ast_print(ast->constructor.arguments);
-          PRINT_DUMP(")");
-          break;
+                                     indentation--;
+                                     print_indentation();
+                                     PRINT_DUMP(")\n");
+                                     break;
 
-      case FUNCTION_NODE:
-          PRINT_DUMP("(CALL %s ", ast->function.name);
-          ast_print(ast->function.arguments);
-          PRINT_DUMP(")");
-          break;
+        case ASSIGNMENT_NODE:
+                                     // ASSIGN type variable_name new_value
+                                     PRINT_DUMP("(ASSIGN %s %s ", var_type_to_str(ast->assignment.variable->variable.var_type).c_str(),ast->assignment.variable->variable.id);
+                                     ast_print(ast->assignment.expression);
+                                     PRINT_DUMP(")\n");
+                                     break;
 
-      case ARGUMENTS_NODE:
-          ast_print(ast->arguments.expression);
-          break;
+        case CONSTRUCTOR_NODE:
+                                     PRINT_DUMP("(CALL %s ", ast->constructor.type->type.to_str);
+                                     ast_print(ast->constructor.arguments);
+                                     PRINT_DUMP(")");
+                                     break;
 
-  // ...
+        case FUNCTION_NODE:
+                                     PRINT_DUMP("(CALL %s ", ast->function.name);
+                                     ast_print(ast->function.arguments);
+                                     PRINT_DUMP(")");
+                                     break;
 
-  default: break;
-  }
+        case ARGUMENTS_NODE:
+                                     ast_print(ast->arguments.expression);
+                                     break;
+
+                                     // ...
+
+        default: break;
+    }
 }
 
 void ast_free(node *ast) {
-    
+
     if (ast == NULL) {
         return;
     }
 
     switch(ast->kind) {
-      case INT_NODE:
-          break;
+        case INT_NODE:
+            break;
 
-      case FLOAT_NODE:
-          break;
-    
-      case BOOL_NODE:
-          break;
+        case FLOAT_NODE:
+            break;
 
-      case PROGRAM_NODE:
-          ast_free(ast->program.scope);
-          break;
+        case BOOL_NODE:
+            break;
 
-      case SCOPE_NODE:
-          ast_free(ast->scope.declarations);
-          ast_free(ast->scope.statements);
-          break;
+        case PROGRAM_NODE:
+            ast_free(ast->program.scope);
+            break;
 
-      case DECLARATIONS_NODE:
-          ast_free(ast->declarations.declarations);
-          ast_free(ast->declarations.declaration);
-          break;
+        case SCOPE_NODE:
+            ast_free(ast->scope.declarations);
+            ast_free(ast->scope.statements);
+            break;
 
-      case STATEMENTS_NODE:
-          ast_free(ast->statements.statements);
-          ast_free(ast->statements.statement);
-          break;
+        case DECLARATIONS_NODE:
+            ast_free(ast->declarations.declarations);
+            ast_free(ast->declarations.declaration);
+            break;
 
-      case UNARY_EXPRESSION_NODE:
-          ast_free(ast->unary_expr.right);
-          break;
-    
-      case BINARY_EXPRESSION_NODE:
-          ast_free(ast->binary_expr.left);
-          ast_free(ast->binary_expr.right);
-          break;
+        case STATEMENTS_NODE:
+            ast_free(ast->statements.statements);
+            ast_free(ast->statements.statement);
+            break;
 
-      case DECLARATION_NODE:
-          ast_free(ast->declaration.type);
-          free(ast->declaration.id);
-          ast_free(ast->declaration.expression);
-          break;
+        case UNARY_EXPRESSION_NODE:
+            ast_free(ast->unary_expr.right);
+            break;
 
-      case VAR_NODE:
-          free(ast->variable.id);
-          break;
+        case BINARY_EXPRESSION_NODE:
+            ast_free(ast->binary_expr.left);
+            ast_free(ast->binary_expr.right);
+            break;
 
-      case TYPE_NODE:
-          free(ast->type.to_str);
-          break;
+        case DECLARATION_NODE:
+            ast_free(ast->declaration.type);
+            free(ast->declaration.id);
+            ast_free(ast->declaration.expression);
+            break;
 
-      case IF_STATEMENT_NODE:
-          ast_free(ast->if_statement.condition);
-          ast_free(ast->if_statement.statement);
-          ast_free(ast->if_statement.else_statement);
-          break;
+        case VAR_NODE:
+            free(ast->variable.id);
+            break;
 
-      case ASSIGNMENT_NODE:
-          ast_free(ast->assignment.variable);
-          ast_free(ast->assignment.expression);
-          break;
+        case TYPE_NODE:
+            free(ast->type.to_str);
+            break;
 
-      case CONSTRUCTOR_NODE:
-          ast_free(ast->constructor.type);
-          ast_free(ast->constructor.arguments);
-          break;
+        case IF_STATEMENT_NODE:
+            ast_free(ast->if_statement.condition);
+            ast_free(ast->if_statement.statement);
+            ast_free(ast->if_statement.else_statement);
+            break;
 
-      case FUNCTION_NODE:
-          free(ast->function.name);
-          ast_free(ast->function.arguments);
-          break;
+        case ASSIGNMENT_NODE:
+            ast_free(ast->assignment.variable);
+            ast_free(ast->assignment.expression);
+            break;
 
-      case ARGUMENTS_NODE:
-          ast_free(ast->arguments.arguments);
-          ast_free(ast->arguments.expression);
-          break;
+        case CONSTRUCTOR_NODE:
+            ast_free(ast->constructor.type);
+            ast_free(ast->constructor.arguments);
+            break;
 
-  // ...
+        case FUNCTION_NODE:
+            free(ast->function.name);
+            ast_free(ast->function.arguments);
+            break;
 
-  default: break;
-  }
+        case ARGUMENTS_NODE:
+            ast_free(ast->arguments.arguments);
+            ast_free(ast->arguments.expression);
+            break;
+
+            // ...
+
+        default: break;
+    }
     free(ast);
 }
 

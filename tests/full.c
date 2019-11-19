@@ -22,14 +22,14 @@
     coeff = lit(coeff);
    if(1 > 4)
     coeff = lit(coeff);
-   if (1.2 && false)
+   if (true && false)
     coeff = lit(coeff);
    //if (1 + 3)
        //coeff=lit(eyeNorm);
    if (true || false)
        coeff=lit(vec4(1.0,1.0,1.0,1.0));
-   coeff=lit(2.0*eyeNorm);
-   coeff = lit(456);
+   coeff = lit(4.0 * coeff);
+   coeff = lit(4576);
    shade = shade + coeff[1] * fCol;
    shade = shade + coeff[2] * fCol;
    gl_FragColor = shade;

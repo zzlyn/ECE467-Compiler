@@ -21,39 +21,39 @@ typedef struct node_ AstNode;
 extern node *ast;
 
 typedef enum {
-  UNKNOWN               = 0,
+    UNKNOWN               = 0,
 
-  PROGRAM_NODE          = (1 << 18),
+    PROGRAM_NODE          = (1 << 18),
 
-  SCOPE_NODE            = (1 << 0),
-  
-  EXPRESSION_NODE       = (1 << 2),
-  UNARY_EXPRESSION_NODE = (1 << 2) | (1 << 3),
-  BINARY_EXPRESSION_NODE= (1 << 2) | (1 << 4),
-  INT_NODE              = (1 << 2) | (1 << 5), 
-  FLOAT_NODE            = (1 << 2) | (1 << 6),
-  BOOL_NODE             = (1 << 2) | (1 << 16),
-  IDENT_NODE            = (1 << 2) | (1 << 7),
-  VAR_NODE              = (1 << 2) | (1 << 8),
-  FUNCTION_NODE         = (1 << 2) | (1 << 9),
-  CONSTRUCTOR_NODE      = (1 << 2) | (1 << 10),
-  TYPE_NODE             = (1 << 2) | (1 << 11),
+    SCOPE_NODE            = (1 << 0),
 
-  STATEMENT_NODE        = (1 << 1),
-  STATEMENTS_NODE       = (1 << 1) | (1 << 15),
-  IF_STATEMENT_NODE     = (1 << 1) | (1 << 11),
-  WHILE_STATEMENT_NODE  = (1 << 1) | (1 << 12),
-  ASSIGNMENT_NODE       = (1 << 1) | (1 << 13),
-  NESTED_SCOPE_NODE     = (1 << 1) | (1 << 14),
+    EXPRESSION_NODE       = (1 << 2),
+    UNARY_EXPRESSION_NODE = (1 << 2) | (1 << 3),
+    BINARY_EXPRESSION_NODE= (1 << 2) | (1 << 4),
+    INT_NODE              = (1 << 2) | (1 << 5), 
+    FLOAT_NODE            = (1 << 2) | (1 << 6),
+    BOOL_NODE             = (1 << 2) | (1 << 16),
+    IDENT_NODE            = (1 << 2) | (1 << 7),
+    VAR_NODE              = (1 << 2) | (1 << 8),
+    FUNCTION_NODE         = (1 << 2) | (1 << 9),
+    CONSTRUCTOR_NODE      = (1 << 2) | (1 << 10),
+    TYPE_NODE             = (1 << 2) | (1 << 11),
 
-  DECLARATION_NODE      = (1 << 15),
-  DECLARATIONS_NODE     = (1 << 16),
+    STATEMENT_NODE        = (1 << 1),
+    STATEMENTS_NODE       = (1 << 1) | (1 << 15),
+    IF_STATEMENT_NODE     = (1 << 1) | (1 << 11),
+    WHILE_STATEMENT_NODE  = (1 << 1) | (1 << 12),
+    ASSIGNMENT_NODE       = (1 << 1) | (1 << 13),
+    NESTED_SCOPE_NODE     = (1 << 1) | (1 << 14),
 
-  ARGUMENTS_NODE        = (1 << 17),
+    DECLARATION_NODE      = (1 << 15),
+    DECLARATIONS_NODE     = (1 << 16),
+
+    ARGUMENTS_NODE        = (1 << 17),
 } node_kind;
 
-#define ARITHMETIC_EXPR 0
-#define LOGICAL_EXPR 1
+#define ARITHMETIC_EXPR 111
+#define LOGICAL_EXPR 222
 
 typedef struct ExpressionEvaluation{
     bool has_error;
@@ -69,104 +69,104 @@ struct node_ {
     // For semantic checking of expression productions.
     ExprEval ee;
 
-  // an example of tagging each node with a type
-  node_kind kind;
+    // an example of tagging each node with a type
+    node_kind kind;
 
-  // Line number.
-  int line;
+    // Line number.
+    int line;
 
-  union {
+    union {
 
-    struct {
-        AstNode* scope;
-    } program;
+        struct {
+            AstNode* scope;
+        } program;
 
-    struct {
-        AstNode* declarations;
-        AstNode* statements;
-    } scope;
-  
-    struct {
-        int op;
-        AstNode *right;
-    } unary_expr;
+        struct {
+            AstNode* declarations;
+            AstNode* statements;
+        } scope;
 
-    struct {
-        int op;
-        AstNode* left;
-        AstNode* right;
-    } binary_expr;
+        struct {
+            int op;
+            AstNode *right;
+        } unary_expr;
 
-    struct {
-        int val;
-    } integer;
+        struct {
+            int op;
+            AstNode* left;
+            AstNode* right;
+        } binary_expr;
 
-    struct {
-        float val;
-    } float_num;
+        struct {
+            int val;
+        } integer;
 
-    struct {
-        bool val;
-    } boolean;
+        struct {
+            float val;
+        } float_num;
 
-    // declarations, statements, variable, if_statement, assignment, constructor, arguments, function
-    struct {
-        AstNode* declarations;
-        AstNode* declaration;
-    } declarations;
+        struct {
+            bool val;
+        } boolean;
 
-    struct {
-        int type; // Refer to parser.y type tokens.
-        char* to_str; // String representation.
-    } type;
+        // declarations, statements, variable, if_statement, assignment, constructor, arguments, function
+        struct {
+            AstNode* declarations;
+            AstNode* declaration;
+        } declarations;
 
-    struct {
-        bool is_const;
-        AstNode* type; // Refer to parser.y.
-        char* id;
-        AstNode* expression;
-    } declaration;
+        struct {
+            int type; // Refer to parser.y type tokens.
+            char* to_str; // String representation.
+        } type;
 
-    struct {
-        AstNode* statements;
-        AstNode* statement;
-    } statements;
+        struct {
+            bool is_const;
+            AstNode* type; // Refer to parser.y.
+            char* id;
+            AstNode* expression;
+        } declaration;
 
-    struct {
-        bool is_const;
-        int var_type; // Assigned during semantic check.
-        char* id;
-        int index; // Dereference index, set to 0 if id is stand alone.
-	bool deref;
-    } variable;
+        struct {
+            AstNode* statements;
+            AstNode* statement;
+        } statements;
 
-    struct {
-        AstNode* condition;
-        AstNode* statement;
-        AstNode* else_statement;
-    } if_statement;
+        struct {
+            bool is_const;
+            int var_type; // Assigned during semantic check.
+            char* id;
+            int index; // Dereference index, set to 0 if id is stand alone.
+            bool deref;
+        } variable;
 
-    struct {
-        AstNode* variable; // Contains type info.
-        AstNode* expression;
-    } assignment;
+        struct {
+            AstNode* condition;
+            AstNode* statement;
+            AstNode* else_statement;
+        } if_statement;
 
-    struct {
-        AstNode* type; // Refer to parser.y.
-        AstNode* arguments;
-    } constructor;
+        struct {
+            AstNode* variable; // Contains type info.
+            AstNode* expression;
+        } assignment;
 
-    struct {
-        char* name;
-        AstNode* arguments;
-    } function;
+        struct {
+            AstNode* type; // Refer to parser.y.
+            AstNode* arguments;
+        } constructor;
 
-    struct {
-        AstNode* arguments;
-        AstNode* expression;
-    } arguments;
-  
-  };
+        struct {
+            char* name;
+            AstNode* arguments;
+        } function;
+
+        struct {
+            AstNode* arguments;
+            AstNode* expression;
+        } arguments;
+
+    };
 };
 
 

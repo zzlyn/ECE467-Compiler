@@ -12,12 +12,12 @@ using namespace std;
 
 
 class varType {
-	public :  
-		int typeOfVariable;
-		bool isConst;
+    public :  
+        int typeOfVariable;
+        bool isConst;
         bool initiated;
-        	varType(int given_type, bool given_const, bool initiated){typeOfVariable = given_type; isConst = given_const; initiated = initiated;}
-                varType(){typeOfVariable = -1; isConst = false; initiated = false;}
+        varType(int given_type, bool given_const, bool initiated){typeOfVariable = given_type; isConst = given_const; initiated = initiated;}
+        varType(){typeOfVariable = -1; isConst = false; initiated = false;}
 
 };
 
@@ -26,19 +26,19 @@ class varType {
 
 extern "C" int predefinedVarnameCheck(char * varname){
 
-	if(!strcmp(varname,"gl_FragColor") || !strcmp(varname,"gl_FragDepth") ||!strcmp(varname,"gl_FragCoord") ||!strcmp(varname,"gl_TexCoord") ){
-		return 1;
-	} 
+    if(!strcmp(varname,"gl_FragColor") || !strcmp(varname,"gl_FragDepth") ||!strcmp(varname,"gl_FragCoord") ||!strcmp(varname,"gl_TexCoord") ){
+        return 1;
+    } 
 
-	if(!strcmp(varname,"gl_Color") || !strcmp(varname,"gl_Secondary") ||!strcmp(varname,"gl_FogFragCoord") || !strcmp(varname,"gl_Light_Half") ){
-                return 1;
-        }
+    if(!strcmp(varname,"gl_Color") || !strcmp(varname,"gl_Secondary") ||!strcmp(varname,"gl_FogFragCoord") || !strcmp(varname,"gl_Light_Half") ){
+        return 1;
+    }
 
-	if(!strcmp(varname,"gl_Light_Ambient") || !strcmp(varname,"gl_Material_Shininess") || !strcmp(varname,"env1") ||!strcmp(varname,"env2") || !strcmp(varname,"env3")){
-                return 1;
-        }
+    if(!strcmp(varname,"gl_Light_Ambient") || !strcmp(varname,"gl_Material_Shininess") || !strcmp(varname,"env1") ||!strcmp(varname,"env2") || !strcmp(varname,"env3")){
+        return 1;
+    }
 
-	return 0;
+    return 0;
 }
 
 
@@ -51,124 +51,124 @@ int my_scope_count = 0;
 
 // Call whenever you enter a new scope  
 extern "C" void addScope(){
-	my_scope_count += 1; 
-	std::tr1::unordered_map<string,varType> scopeTable;
-	symbolTable.push_back(scopeTable);
+    my_scope_count += 1; 
+    std::tr1::unordered_map<string,varType> scopeTable;
+    symbolTable.push_back(scopeTable);
 }
 
 
 // call whenever you exit a scope
 extern "C" void subtractScope(){
-        my_scope_count -= 1;
-	symbolTable.pop_back();
+    my_scope_count -= 1;
+    symbolTable.pop_back();
 }
 
 
 // Finds out whether a varibale exists in the program
 extern "C" int doesVarExist(char * varname){
 
-	if(varname == NULL){
-		return 0;
-	}
+    if(varname == NULL){
+        return 0;
+    }
     if(predefinedVarnameCheck(varname)){
-		return 1;
-	}
-	int currScope = my_scope_count - 1;
-        while(currScope >= 0 ){
-                auto variableFound = symbolTable[currScope].find(varname);
-                if ( variableFound !=  symbolTable[currScope].end()){
-                	return 1;                        
-                }
-                else {
-                        currScope-=1;
-                }
+        return 1;
+    }
+    int currScope = my_scope_count - 1;
+    while(currScope >= 0 ){
+        auto variableFound = symbolTable[currScope].find(varname);
+        if ( variableFound !=  symbolTable[currScope].end()){
+            return 1;                        
         }
-	return 0;
+        else {
+            currScope-=1;
+        }
+    }
+    return 0;
 }
 
 
 extern "C" int varnameCanBeDeclared(char * varname){
-	int currScope = my_scope_count - 1;
-	if(predefinedVarnameCheck(varname)){
-		return 0;
-	}
-	if(currScope >=0){
-                auto variableFound = symbolTable[currScope].find(varname);	
-		if ( variableFound !=  symbolTable[currScope].end()){
-			// Varname exists in current scope already
-                        return 0;
-                }
-		else{
-			return 1;
-		}
-	}
-	printf("Error: Scope is invalid it is %d \n", currScope); 
-	return 0;
+    int currScope = my_scope_count - 1;
+    if(predefinedVarnameCheck(varname)){
+        return 0;
+    }
+    if(currScope >=0){
+        auto variableFound = symbolTable[currScope].find(varname);	
+        if ( variableFound !=  symbolTable[currScope].end()){
+            // Varname exists in current scope already
+            return 0;
+        }
+        else{
+            return 1;
+        }
+    }
+    printf("Error: Scope is invalid it is %d \n", currScope); 
+    return 0;
 }
 
 
 
 // Returns which scope the specific varibale name is declared in   
 extern "C" int getVarScope(char * varname){
- int currScope = my_scope_count - 1;
-        int varFound  = 0; 
-        while(!varFound && currScope >= 0 ){
-                auto variableFound = symbolTable[currScope].find(varname);
-                if ( variableFound !=  symbolTable[currScope].end()){
-                        return currScope; 
-                }
-                else {
-                        currScope-=1;
-                }
+    int currScope = my_scope_count - 1;
+    int varFound  = 0; 
+    while(!varFound && currScope >= 0 ){
+        auto variableFound = symbolTable[currScope].find(varname);
+        if ( variableFound !=  symbolTable[currScope].end()){
+            return currScope; 
         }
-        return -1;
+        else {
+            currScope-=1;
+        }
+    }
+    return -1;
 }
 
 
 // Assumes that the varibale name exists somewhere
 extern "C" int  varTypeMatch(char * varname, int varType){
 
-	int varibaleScope = getVarScope(varname);
-        auto  thisVarType = symbolTable[varibaleScope][varname];
-        int thisType = thisVarType.typeOfVariable;
-	if(thisType == varType){
-		return 1;
-	}
-	return 0; 
+    int varibaleScope = getVarScope(varname);
+    auto  thisVarType = symbolTable[varibaleScope][varname];
+    int thisType = thisVarType.typeOfVariable;
+    if(thisType == varType){
+        return 1;
+    }
+    return 0; 
 }
 
 
 
 extern "C" int  getVarType(char * varname){
 
-	if(predefinedVarnameCheck(varname)){
-		if(!strcmp(varname,"gl_FragDepth")){
-			return BOOL_T;
-		}	
-		return VEC4_T; 
-	}
+    if(predefinedVarnameCheck(varname)){
+        if(!strcmp(varname,"gl_FragDepth")){
+            return BOOL_T;
+        }	
+        return VEC4_T; 
+    }
 
 
-        int varibaleScope = getVarScope(varname);
-        auto thisVarType = symbolTable[varibaleScope][varname];
-        int thisType = thisVarType.typeOfVariable;
-        return thisType;
+    int varibaleScope = getVarScope(varname);
+    auto thisVarType = symbolTable[varibaleScope][varname];
+    int thisType = thisVarType.typeOfVariable;
+    return thisType;
 }
 
 
 extern "C" int  getConstType(char * varname){
 
-        if(predefinedVarnameCheck(varname)){
-		if(!strcmp(varname,"gl_Light_Half") || !strcmp(varname,"gl_Light_Ambient") ||!strcmp(varname,"gl_Material_Shininess") ||
-		   !strcmp(varname,"env1") || !strcmp(varname,"env2") || !strcmp(varname,"env3")){
-			return 1;
-		} 
-		return 0;
-	}
-        int varibaleScope = getVarScope(varname);
-        varType thisVarType = symbolTable[varibaleScope][varname];
-        bool thisConst = thisVarType.isConst;
-        return thisConst;
+    if(predefinedVarnameCheck(varname)){
+        if(!strcmp(varname,"gl_Light_Half") || !strcmp(varname,"gl_Light_Ambient") ||!strcmp(varname,"gl_Material_Shininess") ||
+                !strcmp(varname,"env1") || !strcmp(varname,"env2") || !strcmp(varname,"env3")){
+            return 1;
+        } 
+        return 0;
+    }
+    int varibaleScope = getVarScope(varname);
+    varType thisVarType = symbolTable[varibaleScope][varname];
+    bool thisConst = thisVarType.isConst;
+    return thisConst;
 }
 
 
@@ -180,9 +180,9 @@ extern "C" void set_initiated(char* varname) {
 }
 
 extern "C" varType getVarStruct(char * varname){
-        int varibaleScope = getVarScope(varname);
-        varType thisVarType = symbolTable[varibaleScope][varname];
-        return thisVarType;
+    int varibaleScope = getVarScope(varname);
+    varType thisVarType = symbolTable[varibaleScope][varname];
+    return thisVarType;
 }
 
 
@@ -192,47 +192,47 @@ extern "C" varType getVarStruct(char * varname){
 
 extern "C" void addToSymbolTable(char * var_name , int given_varType , bool given_isConst , bool initiated){
     if (my_scope_count > 0){
-		auto variableFound = symbolTable[my_scope_count -1].find(var_name);
-		if (variableFound == symbolTable[my_scope_count - 1].end()){
-			varType thisVarType = varType(given_varType,given_isConst,initiated);
-                        symbolTable[my_scope_count - 1][var_name] = thisVarType; 
+        auto variableFound = symbolTable[my_scope_count -1].find(var_name);
+        if (variableFound == symbolTable[my_scope_count - 1].end()){
+            varType thisVarType = varType(given_varType,given_isConst,initiated);
+            symbolTable[my_scope_count - 1][var_name] = thisVarType; 
 
-		} 
-		else{
-			cout << endl << "ERROR : Redecleration of variable!" << endl;
-		}
-	}
+        } 
+        else{
+            cout << endl << "ERROR : Redecleration of variable!" << endl;
+        }
+    }
 
-	else{
-		printf("Scope Count is less than zero\n");
-	}
+    else{
+        printf("Scope Count is less than zero\n");
+    }
 }
 
 
 // This will find the user symbol from the symbol table. Doesn't return anything for now. Not sure what ast implementation will look like. 
 /*
-extern "C" void findUsedSymbol(char * var_name){
-	int currScope = my_scope_count - 1;
-	int varFound  = 0;
-	while(!varFound && currScope >= 0 ){
-		auto variableFound = symbolTable[currScope].find(var_name);
-		if ( variableFound !=  symbolTable[currScope].end()){
-			varFound = 1;
-			//cout << endl << "In findUsedSymbol Variable found name is " << var_name << " " <<endl; 
-			int numTypes =  symbolTable[currScope][var_name].size();
-			//cout << endl << "Num types is " << numTypes << endl;
-			for (int i = 0; i <  numTypes ; i ++){
-				//cout << endl << "    Type is " <<  symbolTable[currScope][var_name][i] << endl;
-			}
+   extern "C" void findUsedSymbol(char * var_name){
+   int currScope = my_scope_count - 1;
+   int varFound  = 0;
+   while(!varFound && currScope >= 0 ){
+   auto variableFound = symbolTable[currScope].find(var_name);
+   if ( variableFound !=  symbolTable[currScope].end()){
+   varFound = 1;
+//cout << endl << "In findUsedSymbol Variable found name is " << var_name << " " <<endl; 
+int numTypes =  symbolTable[currScope][var_name].size();
+//cout << endl << "Num types is " << numTypes << endl;
+for (int i = 0; i <  numTypes ; i ++){
+//cout << endl << "    Type is " <<  symbolTable[currScope][var_name][i] << endl;
+}
 
-		}
-		else {
-			currScope-=1;
-		}
-	} 
-	if (!varFound){
-		cout << endl << "Error : Variable  " << var_name << " is not declared !" << endl;
-	}
+}
+else {
+currScope-=1;
+}
+} 
+if (!varFound){
+cout << endl << "Error : Variable  " << var_name << " is not declared !" << endl;
+}
 }
 */
 

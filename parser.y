@@ -20,8 +20,6 @@
 #include "symbol.h"
 //#include "semantic.h"
 
-
-
 #define YYERROR_VERBOSE
 #define yTRACE(x)    { if (traceParser) fprintf(traceFile, "%s\n", x); }
 
@@ -33,9 +31,9 @@ char* init_c_str(std::string str) {
     char* ptr = (char*) malloc(str.length() + 1);
     strcpy(ptr, str.c_str());
 
-    // printf("DEBUG: initializing c string %s\n", ptr);
+// printf("DEBUG: initializing c string %s\n", ptr);
 
-    return ptr;
+return ptr;
 }
 
 // Translates function code to names for cleaner code.
@@ -44,15 +42,15 @@ char* function_code_to_name(int code) {
         return init_c_str("DP3");
     }
 
-    if (code == 1) {
+if (code == 1) {
         return init_c_str("LIT");
     }
 
-    if (code == 2) {
+if (code == 2) {
         return init_c_str("RSQ");
     }
-    
-    // We screwed.
+
+// We screwed.
     return NULL;
 }
 
@@ -87,7 +85,7 @@ char* function_code_to_name(int code) {
   int function_code;
   AstNode* ast_node;
 
-  int type_code;
+int type_code;
 }
 
 %token 
@@ -314,8 +312,8 @@ void yyerror(const char* s) {
     return;    /* Error has already been reported by scanner */
   else
     errorOccurred = 1;
-        
-  fprintf(errorFile, "\nPARSER ERROR, LINE %d",yyline);
+
+fprintf(errorFile, "\nPARSER ERROR, LINE %d",yyline);
   if (strcmp(s, "parse error")) {
     if (strncmp(s, "parse error, ", 13))
       fprintf(errorFile, ": %s\n", s);

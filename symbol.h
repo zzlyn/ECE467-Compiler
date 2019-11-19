@@ -11,12 +11,12 @@
 
 
 class varType {
-        public :
-                int typeOfVariable;
-                bool isConst;
-                bool initiated;
-                varType(int given_type, bool given_const){typeOfVariable = given_type; isConst = given_const; }
-                varType(){typeOfVariable = -1; isConst = false;}
+    public :
+        int typeOfVariable;
+        bool isConst;
+        bool initiated;
+        varType(int given_type, bool given_const){typeOfVariable = given_type; isConst = given_const; }
+        varType(){typeOfVariable = -1; isConst = false;}
 
 };
 
