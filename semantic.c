@@ -443,7 +443,7 @@ void semantic_check_node(AstNode* node) {
                                        addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const, initiated);
                                    }
                                    else{
-                                       ERROR("Error(line %i): redecleartion of variable %s in same scope\n", line, node->declaration.id);
+                                       ERROR("Error(line %i): redecleartion of variable \"%s\" in same scope\n", line, node->declaration.id);
                                    }
                                    break;
                                }
@@ -451,7 +451,7 @@ void semantic_check_node(AstNode* node) {
         case VAR_NODE: {// Needs to set ExprEval.
                            // Check 1: Variable exists on symbol table, fetch its type and populate ExprEval.
                            if (!doesVarExist(node->variable.id)) {
-                               ERROR("Error(line %i): variable %s does not exist in symbol table.\n", line, node->variable.id);
+                               ERROR("Error(line %i): variable \"%s\" does not exist in symbol table.\n", line, node->variable.id);
                            } else {
                                node->variable.var_type = getVarType(node->variable.id);
                                node->ee = typeToEE(node->variable.var_type);
@@ -502,7 +502,7 @@ void semantic_check_node(AstNode* node) {
                                      // int varType = variableNode->type.type; 
                                  }
                                  else{
-                                     ERROR("Error(line %i): In ASSIGNMENT_NODE variable %s does not exist in symbol table.\n", line, variableNode->variable.id);
+                                     ERROR("Error(line %i): Assigning to variable \"%s\" which does not exist in symbol table.\n", line, variableNode->variable.id);
                                  }
                                  break;
 

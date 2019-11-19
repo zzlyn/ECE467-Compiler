@@ -391,7 +391,8 @@ void ast_print(node *n) {
 
             ast_print(n->scope.declarations);
             // One empty line between to make things look nicer.
-            PRINT_DUMP("\n");
+            if (n->scope.declarations)
+                PRINT_DUMP("\n");
             ast_print(n->scope.statements);
 
             indentation--;
@@ -447,7 +448,7 @@ void ast_print(node *n) {
                                   AstNode* tmp = n;
                                   while(tmp != NULL) {
                                       if (!is_inline(tmp->statements.statement))
-                                        print_indentation();
+                                          print_indentation();
                                       ast_print(tmp->statements.statement);
                                       tmp = tmp->statements.statements;
                                   }
@@ -511,17 +512,18 @@ void ast_print(node *n) {
                                      indentation++;
                                      ast_print(n->if_statement.condition);
                                      PRINT_DUMP("\n");
-                                     print_indentation();
+
+                                     if (!is_inline(n->if_statement.statement))
+                                         print_indentation();
                                      ast_print(n->if_statement.statement);
 
                                      if (n->if_statement.else_statement != NULL) {
                                          indentation--;
-                                         if (!is_inline(n->if_statement.else_statement))
-                                            print_indentation();
+                                         print_indentation();
                                          PRINT_DUMP(" ELSE\n");
                                          indentation++;
-
-                                         print_indentation();
+                                         if (!is_inline(n->if_statement.else_statement))
+                                             print_indentation();
                                          ast_print(n->if_statement.else_statement);
                                      }
 
@@ -553,19 +555,19 @@ void ast_print(node *n) {
                                  AstNode* prev = NULL;
                                  // Reverse arguments.
                                  while(n != NULL) {
-                                    AstNode* next = n->arguments.arguments;
-                                    n->arguments.arguments = prev;
-                                    prev = n;
-                                    n = next;
+                                     AstNode* next = n->arguments.arguments;
+                                     n->arguments.arguments = prev;
+                                     prev = n;
+                                     n = next;
                                  }
                                  n = prev;
 
                                  AstNode* tmp = n;
                                  while(tmp != NULL) {
-                                    ast_print(tmp->arguments.expression);
-                                    std::string suffix = tmp->arguments.arguments != NULL ? ", " : "";
-                                    PRINT_DUMP(suffix.c_str());
-                                    tmp = tmp->arguments.arguments;
+                                     ast_print(tmp->arguments.expression);
+                                     std::string suffix = tmp->arguments.arguments != NULL ? ", " : "";
+                                     PRINT_DUMP(suffix.c_str());
+                                     tmp = tmp->arguments.arguments;
                                  }
                                  break;
                              }
