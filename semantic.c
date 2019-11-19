@@ -65,6 +65,15 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
     AstNode * node = givenNode;        
     while(node != NULL){
         ExprEval ee = node->arguments.expression->ee;
+	if(node->arguments.expression->kind  == VAR_NODE){
+		if(isWriteOnly(node->arguments.expression->variable.id) && errorOccurred == 0 ){
+			ERROR("Error: Reading from write only variable on line %d\n",node->arguments.expression->line);
+		}
+		
+
+
+	}
+
         if(typeToCheck != ee.base_type){
             return 0;
         }
