@@ -19,8 +19,6 @@ bool in_ifelse_scope = false;
 
 node *ast = NULL;
 
-bool in_ifelse_scope =  false;
-
 node *ast_allocate(node_kind kind, ...) {
     va_list args;
 
