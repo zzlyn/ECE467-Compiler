@@ -181,7 +181,7 @@ std::string var_type_to_str(int var_type) {
             break;
 
         default:
-            str = "unknown";
+            str = "undefined";
             break;
     }
 

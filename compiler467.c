@@ -1,7 +1,10 @@
 /***********************************************************************
  * **YOUR GROUP INFO SHOULD GO HERE**
- * Name : Rajarupan Sampanthan
- * Student Number : 1002477232 
+ * Name 0 : Yannan Lin
+ * Student Number 0: 1001257891
+ *
+ * Name 1 : Rajarupan Sampanthan
+ * Student Number 1: 1002477232 
  * compiler467.c
  *
  * This is the main driver program for the CSC467F course project
