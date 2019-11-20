@@ -522,6 +522,13 @@ void semantic_check_node(AstNode* node) {
                                  AstNode * variableNode = node->assignment.variable;
                                  if(doesVarExist(variableNode->variable.id)) {
                                      if(!isReadOnly(variableNode->variable.id,variableNode->line)) {
+
+
+					if(in_ifelse_scope && isWriteOnly(variableNode->variable.id)){
+						ERROR("Error(line %i): Assigning result variable %s in conditional block\n",variableNode->line,variableNode->variable.id);
+					}
+
+
                                          int lhs_type = ExprNodeToType(variableNode);
                                          int rhs_type = ExprNodeToType(node->assignment.expression);
 					if(writeOnlyCheck(node->assignment.expression)){

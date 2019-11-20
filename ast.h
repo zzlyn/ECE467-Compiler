@@ -20,7 +20,7 @@ typedef struct node_ node;
 typedef struct node_ AstNode;
 extern node *ast;
 
-bool in_ifelse_scope = false;
+extern  bool in_ifelse_scope ;
 
 typedef enum {
     UNKNOWN               = 0,
