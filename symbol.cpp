@@ -7,22 +7,9 @@
 #include <cstdarg>
 #include "ast.h"
 #include "parser.tab.h"
+#include "symbol.h"
+
 using namespace std;
-
-
-
-class varType {
-    public :  
-        int typeOfVariable;
-        bool isConst;
-        bool initiated;
-        varType(int given_type, bool given_const, bool initiated){typeOfVariable = given_type; isConst = given_const; initiated = initiated;}
-        varType(){typeOfVariable = -1; isConst = false; initiated = false;}
-
-};
-
-
-
 
 extern "C" int predefinedVarnameCheck(char * varname){
 
@@ -156,7 +143,7 @@ extern "C" int  getVarType(char * varname){
 }
 
 
-extern "C" int  getConstType(char * varname){
+extern "C" bool  getConstType(char * varname){
 
     if(predefinedVarnameCheck(varname)){
         if(!strcmp(varname,"gl_Light_Half") || !strcmp(varname,"gl_Light_Ambient") ||!strcmp(varname,"gl_Material_Shininess") ||

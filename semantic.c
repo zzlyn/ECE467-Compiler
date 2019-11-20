@@ -1,4 +1,5 @@
 #include "ast.h"
+bool in_variable_assign = false;
 #include "symbol.h"
 #include  "parser.tab.h"
 #include "common.h"
@@ -35,9 +36,9 @@ int isReadOnly(char * varname, int line){
 
     if(doesVarExist(varname)){
         int isConst = getConstType(varname);
-	if(isConst){
- 	       ERROR("Error(line %i): Assigning a value to const variable %s\n", line,varname);
-	}
+        if(isConst){
+            ERROR("Error(line %i): Assigning a value to const variable %s\n", line,varname);
+        }
         return isConst;
     }
 
@@ -58,12 +59,12 @@ int isWriteOnly(char * varname){
 
 int writeOnlyCheck(AstNode * node){
 
-	if(node->kind == VAR_NODE){
-		if(isWriteOnly(node->variable.id)){
-			return 1;
-		}
-	}
-	return 0;	
+    if(node->kind == VAR_NODE){
+        if(isWriteOnly(node->variable.id)){
+            return 1;
+        }
+    }
+    return 0;	
 } 
 
 
@@ -82,12 +83,12 @@ int argTypeCheck(int typeToCheck, AstNode * givenNode){
     AstNode * node = givenNode;        
     while(node != NULL){
         ExprEval ee = node->arguments.expression->ee;
-	if(node->arguments.expression->kind  == VAR_NODE){
-		if(writeOnlyCheck(node->arguments.expression) && errorOccurred == 0 ){
-			ERROR("Error: Reading from write only variable on line %d\n",node->arguments.expression->line);
-		}
-		
-	}
+        if(node->arguments.expression->kind  == VAR_NODE){
+            if(writeOnlyCheck(node->arguments.expression) && errorOccurred == 0 ){
+                ERROR("Error: Reading from write only variable on line %d\n",node->arguments.expression->line);
+            }
+
+        }
 
         if(typeToCheck != ee.base_type){
             return 0;
@@ -157,9 +158,9 @@ ExprEval evaluate_unary_expression(AstNode* node) {
         return ExprError;
     }
 
-	if(writeOnlyCheck(node->unary_expr.right)){
-		ERROR("Error: Reading from write only varibale\n");
-	}
+    if(writeOnlyCheck(node->unary_expr.right)){
+        ERROR("Error: Reading from write only varibale\n");
+    }
 
 
 
@@ -184,15 +185,15 @@ ExprEval evaluate_binary_expression(AstNode* node) {
     int op_type = getOpType(op);
 
 
-       if(writeOnlyCheck(node->binary_expr.left)){
-                ERROR("Error: Reading from write only variable. Left operand is write only. Line %d\n",node->binary_expr.left->line);
-                return ExprError;
-        }
+    if(writeOnlyCheck(node->binary_expr.left)){
+        ERROR("Error: Reading from write only variable. Left operand is write only. Line %d\n",node->binary_expr.left->line);
+        return ExprError;
+    }
 
-       if(writeOnlyCheck(node->binary_expr.right)){
-                ERROR("Error: Reading from write only variable. Right operand is write only.Line %d\n",node->binary_expr.right->line);
-                return ExprError;
-        }
+    if(writeOnlyCheck(node->binary_expr.right)){
+        ERROR("Error: Reading from write only variable. Right operand is write only.Line %d\n",node->binary_expr.right->line);
+        return ExprError;
+    }
 
 
 
@@ -487,11 +488,19 @@ void semantic_check_node(AstNode* node) {
                            } else {
                                node->variable.var_type = getVarType(node->variable.id);
                                node->ee = typeToEE(node->variable.var_type);
-                               
+
                            }
-                                if(node->variable.deref){
-                                        node->ee.class_size = 1;
-                                }
+
+                           // Check 1.5: If the var node is not being assigned to, it has to be initialized for reading.
+                           if (!predefinedVarnameCheck(node->variable.id) && doesVarExist(node->variable.id)) {
+                               if (!in_variable_assign && !getVarStruct(node->variable.id).initiated) {
+                                   ERROR("Error(line %i): Variable %s needs to be initialized before read.\n", line, node->variable.id);
+                               }
+                           }
+
+                           if(node->variable.deref){
+                               node->ee.class_size = 1;
+                           }
 
 
                            // Check 2: If variable is a vector, check that index does not go out of bound.
@@ -507,9 +516,9 @@ void semantic_check_node(AstNode* node) {
                        break;
 
         case IF_STATEMENT_NODE:
-			if(writeOnlyCheck(node->if_statement.condition)){
-				ERROR("Error: Reading from write only variable. On line %d\n",node->if_statement.condition->line);
-			}
+                       if(writeOnlyCheck(node->if_statement.condition)){
+                           ERROR("Error: Reading from write only variable. On line %d\n",node->if_statement.condition->line);
+                       }
                        if(node->if_statement.condition->ee.has_error)
                            break;
                        // We dont need this in nodes that do not reduce to expressions: ExprEval ee = node->if_statement.condition->ee;
@@ -524,9 +533,9 @@ void semantic_check_node(AstNode* node) {
                                      if(!isReadOnly(variableNode->variable.id,variableNode->line)) {
                                          int lhs_type = ExprNodeToType(variableNode);
                                          int rhs_type = ExprNodeToType(node->assignment.expression);
-					if(writeOnlyCheck(node->assignment.expression)){
-	                	                ERROR("Error: Reading from write only variable. On line %d \n",node->assignment.expression->line);
-        		                }
+                                         if(writeOnlyCheck(node->assignment.expression)){
+                                             ERROR("Error: Reading from write only variable. On line %d \n",node->assignment.expression->line);
+                                         }
 
                                          if (lhs_type != rhs_type)
                                              ERROR("Error(line %i): LHS and RHS of the assignment do not have equivalent types (%s != %s).\n", line, var_type_to_str(lhs_type).c_str(), var_type_to_str(rhs_type).c_str());
@@ -534,7 +543,7 @@ void semantic_check_node(AstNode* node) {
                                          if(!predefinedVarnameCheck(variableNode->variable.id))
                                              set_initiated(variableNode->variable.id);
                                      }
-                                     
+
 
                                      // int varType = variableNode->type.type; 
                                  }

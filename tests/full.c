@@ -10,6 +10,10 @@
    const vec4 red = vec4(1.0,0.0,0.0,1.0);
    const float red_b = red[0];
    int b = 10;
+   int c;
+   b = c;
+   a = c;
+   c = 10;
    eyeNorm = fTex;
    b = eyeNorm;
    b = -a * 4;

@@ -15,6 +15,8 @@
 
 extern int yyline;
 
+bool in_ifelse_scope = false;
+
 node *ast = NULL;
 
 node *ast_allocate(node_kind kind, ...) {
@@ -316,7 +318,9 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
             break;
 
         case ASSIGNMENT_NODE:
+            in_variable_assign = true;
             ast_traverse_post(ast->assignment.variable, post_call);
+            in_variable_assign = false;
             ast_traverse_post(ast->assignment.expression, post_call);
             break;
 

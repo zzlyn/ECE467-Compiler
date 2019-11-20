@@ -15,8 +15,8 @@ class varType {
         int typeOfVariable;
         bool isConst;
         bool initiated;
-        varType(int given_type, bool given_const){typeOfVariable = given_type; isConst = given_const; }
-        varType(){typeOfVariable = -1; isConst = false;}
+        varType(int given_type, bool given_const, bool init){typeOfVariable = given_type; isConst = given_const; initiated = init; }
+        varType(){typeOfVariable = -1; isConst = false; initiated = false;}
 
 };
 
