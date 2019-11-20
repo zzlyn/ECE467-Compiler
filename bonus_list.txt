@@ -1,0 +1,7 @@
+
+1. Ensured variables have been assigned values before being read.
+
+2. Reported line number where errors occur.
+
+3. Meaningful debuggable messages when errors happen.
+
