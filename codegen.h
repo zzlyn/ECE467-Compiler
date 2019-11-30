@@ -1,10 +1,15 @@
 #ifndef GEN_H
 #define GEN_H
 
+#include <stdio.h>
 #include <stdlib.h>
-#include "ast.h"
-#include "symbol.h"
+#include<tr1/unordered_map>
+#include <vector>
+#include <iostream>
+#include <cstring>
 
-void genCode(AstNode* ast);
+
+
+extern "C" void genCode(AstNode* ast);
 
 #endif
