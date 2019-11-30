@@ -27,6 +27,8 @@ node *ast_allocate(node_kind kind, ...) {
     memset(ast, 0, sizeof *ast);
     ast->kind = kind;
     ast->line = yyline;
+    ast->instruction = NULL;
+    ast->assembly_args = NULL;	
 
     va_start(args, kind); 
 

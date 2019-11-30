@@ -65,6 +65,14 @@ typedef struct ExpressionEvaluation{
     int class_size; // 1 for SCALAR and >1 for VECTOR types.
 } ExprEval;
 
+
+typedef struct assembly_argument{
+	char * reg_name;
+	char * index;
+	struct assembly_argument * next_arg;
+} assembly_arg;
+
+
 #define ExprError (ExprEval) {.has_error = true, -1, -1}
 
 struct node_ {
@@ -77,6 +85,11 @@ struct node_ {
 
     // Line number.
     int line;
+
+
+    // Instructions for assembly stuff
+    char * instruction = NULL;	
+    assembly_arg * assembly_args = NULL;
 
     union {
 
