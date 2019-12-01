@@ -28,6 +28,46 @@ static const std::string ASB_FILE_NAME = "asb.txt";
 extern "C" void assembly_print(node *n);
 //http://www.eecg.toronto.edu/~jzhu/csc467/readings/csc467_finalVersion.pdf?fbclid=IwAR1jw3sOREgfYkC337wigX_8yIfPZlfUpH8kBLUJ8CMIxF6NaCQ9QzKoX3E
 
+char * str_to_char (string str ){
+	char* ca = new char[str.size()+1];
+	std::copy(str.begin(), str.end(), ca);
+	ca[str.size()] = '\0';
+	return ca;
+}
+
+
+
+std::string binary_op_assembly_str(int op) {
+    std::string str;
+    switch (op) {
+
+
+        case PLUS: {
+                       str = "ADD";
+                       break;}
+
+        case MINUS:{
+                       str = "SUB";
+                       break;}
+
+        case MUL: {
+                      str = "MUL";
+                      break;}
+
+        case DIV: {
+                      str = "/";
+                      break;}
+
+        case POWER:{
+                       str = "POW";
+                       break;}
+
+        default: {
+                     str = "UNKNOWN YOOOO";
+                     break;}
+    }
+    return str;
+}
 
 
 std::string get_index_string(int deref, int index){
@@ -193,7 +233,32 @@ void assembly_check_node(AstNode* node) {
 
         case STATEMENTS_NODE:	break;
         case UNARY_EXPRESSION_NODE:	break;// Needs to set ExprEval.
-        case BINARY_EXPRESSION_NODE:	break; // Needs to set ExprEval.
+        case BINARY_EXPRESSION_NODE:{
+
+
+
+					string binary_op_inst = binary_op_assembly_str(node->binary_expr.op);
+					char * right_name = node->binary_expr.right->result_reg;
+
+					//if(right_name) std::cout <<" Right name is " << right_name << std::endl;
+
+                                        char *  left_name =  node->binary_expr.left-> result_reg;
+
+                                        //if(left_name) std::cout <<"Left name is " << left_name << std::endl;
+
+					
+
+                                        //std::cout <<"Op is " << binary_op_inst  << std::endl;
+					std::string reg_name = get_new_reg_name(NULL);
+					node->result_reg = str_to_char(reg_name);
+					std::cout << binary_op_inst << " " << reg_name << " " ;
+                                        std::cout << left_name << " " << right_name << std::endl;
+
+
+					break; // Needs to set ExprEval.
+
+				}
+
         case DECLARATION_NODE:{	
                                 //printf("In the declaration node \n");
                                 char * id = node->declaration.id;
@@ -201,40 +266,32 @@ void assembly_check_node(AstNode* node) {
 				node->instruction = "NO_OP";
 				//std::string to_print = get_assembly_line(node);
 				//std::cout << "Assemnbl;y line is " << to_print << std::endl;
-
 				//std::cout <<"Node is " << id << std::endl;
 				std::string reg_name = get_new_reg_name(id);
-
-				node->result_reg = (char*)reg_name.c_str();
-
+				node->result_reg = str_to_char(reg_name);
 				//std::cout << "Reg name is " << reg_name << std::endl ;
 				//std::cout << "Reg name is " << get_reg_name(id) << std::endl ;
 				std::cout << "TEMP " << reg_name << ";" << std::endl;
-
 				if(node->declaration.expression == NULL){
 					std::cout << "MOV " << reg_name << " 0.00000;" << std::endl;
 				}
 
 				else {
 					//DO SOMETHING IF INITILIZED
-
 				}
-	
-
 				break;
 			}
         case VAR_NODE:	{
 
                                 node->instruction = "NO_OP";
-
-				std::cout << "In var node " << std::endl;
+				//std::cout << "In var node " << std::endl;
 				//std:: cout << "Var name is " << node->variable. id << std::endl;
 				//std::cout << "Index is " << node->variable.index << std::endl;
 				//std::cout <<"Index assembly string is " << get_index_string(node->variable.index) << std::endl;
 				string reg_name  = get_reg_name( node->variable. id);
 				string index_string =  get_index_string(node->variable. deref,node->variable.index);
 				reg_name = reg_name + index_string;
-                                node->result_reg = (char*)reg_name.c_str();
+                                node->result_reg = str_to_char(reg_name);
 				//std::cout << "Reg name is " <<  node->result_reg << std::endl;
 
 				break;
