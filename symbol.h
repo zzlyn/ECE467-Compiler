@@ -15,10 +15,15 @@ class varType {
         int typeOfVariable;
         bool isConst;
         bool initiated;
-        varType(int given_type, bool given_const, bool init){typeOfVariable = given_type; isConst = given_const; initiated = init; }
+	std::string reg_name;
+        varType(int given_type, bool given_const, bool init){typeOfVariable = given_type; isConst = given_const; initiated = init; reg_name = "";}
         varType(){typeOfVariable = -1; isConst = false; initiated = false;}
 
 };
+
+
+const char * get_reg_name(char * var_name);
+int does_var_have_regname(char * var_name);
 
 
 

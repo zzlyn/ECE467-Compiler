@@ -36,6 +36,51 @@ int my_scope_count = 0;
 
 
 
+int does_var_have_regname(char * var_name){
+
+	if(predefinedVarnameCheck(var_name)){
+		return 1;
+	}
+
+	else{
+		int var_scope = getVarScope(var_name);
+		varType thisVarType = symbolTable[var_scope][var_name];
+		string reg_name = thisVarType.reg_name;
+		if(reg_name.empty()){
+			return 0;
+		}
+		return 1;
+	}
+}
+
+const char * get_reg_name(char * var_name){
+        if(predefinedVarnameCheck(var_name)){
+		if (!strcmp(var_name,"gl_Color" )){ return "result.color";}
+		if (!strcmp(var_name,"gl_FragDepth" )){ return "result.depth";}
+		if (!strcmp(var_name,"gl_FragCoord" )){ return "fragment.position";}
+		if (!strcmp(var_name,"gl_TexCoord" )){ return "fragment.texcoord";}
+		if (!strcmp(var_name,"gl_Color" )){ return "fragment.color";}
+		if (!strcmp(var_name,"gl_Secondary" )){ return "fragment.color.secondary";}
+		if (!strcmp(var_name,"gl_FogFragCoord" )){ return "fragment.fogcoord";}
+		if (!strcmp(var_name,"gl_Light_Half" )){ return "state.light[0].half";}
+		if (!strcmp(var_name,"gl_Light_Ambient" )){ return "state.lightmodel.ambient";}
+		if (!strcmp(var_name,"gl_Material_Shininess" )){ return "state.material.shininess";}
+		if (!strcmp(var_name,"env1" )){ return "program.env[1]";}
+		if (!strcmp(var_name,"env2" )){ return "program.env[2]";}
+		if (!strcmp(var_name,"env3" )){ return "program.env[3]";}
+		return "";
+	}
+
+	else{
+		int var_scope = getVarScope(var_name);
+                varType thisVarType = symbolTable[var_scope][var_name];
+                string reg_name = thisVarType.reg_name;
+		return reg_name.c_str();
+	}
+}
+
+
+
 // Call whenever you enter a new scope  
 extern "C" void addScope(){
     my_scope_count += 1; 

@@ -11,6 +11,8 @@
 #include "codegen.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
+
 
 #include "ast.h"
 #include "symbol.h"
@@ -20,15 +22,55 @@
 #define DEBUG_PRINT_TREE 0
 #define PRINT_DUMP(...) fprintf(dumpFile, __VA_ARGS__);
 
-
+using namespace std; 
 
 static const std::string ASB_FILE_NAME = "asb.txt";
 extern "C" void assembly_print(node *n);
 
 
+
+std::vector<std::vector<std::string>> used_reg_names;
+std::vector<std::string> free_reg_names;
+int max_register = 0;
+
+// Creates a new register name if you need it 
+std::string gen_new_reg_name(){
+	string new_reg_name =  "temp_" + to_string(max_register);
+	int scope_depth = used_reg_names.size() - 1;
+	if(scope_depth >= 0){	
+		used_reg_names[scope_depth].push_back(new_reg_name);
+	}
+	else{
+		printf("ISSUE WITH gen_new_reg_name FUNCTION \n");
+	}
+	max_register = max_register + 1;
+	return new_reg_name;
+}
+
+// gets a register for someone to use 
+// If null it is a temporary register
+// If not null get the reg name from symbol table
+std::string  get_reg_name(char * var_name){
+
+
+	if(var_name != NULL){
+
+
+	}
+
+	else{
+
+
+
+	}
+} 
+
+
+
+
 extern "C" void genCode(AstNode* ast) {
     printf("genCode start\n");    
-	assembly_print(ast);
+//	assembly_print(ast);
 }
 
 
