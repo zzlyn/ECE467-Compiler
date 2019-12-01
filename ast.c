@@ -5,6 +5,7 @@
 
 #include "ast.h"
 #include "symbol.h"
+#include "codegen.h"
 #include "common.h"
 #include "semantic.h"
 #include "parser.tab.h"
@@ -278,6 +279,7 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
 
         case SCOPE_NODE:
             addScope();
+		add_reg_scope();
             ast_traverse_post(ast->scope.declarations, post_call);
             ast_traverse_post(ast->scope.statements, post_call);
             break;
@@ -345,7 +347,7 @@ void ast_traverse_post(node *ast, NodeFunc post_call) {
         default: break;
     }
     if (post_call) post_call(ast);
-    if (ast->kind == SCOPE_NODE) { subtractScope(); }
+    if (ast->kind == SCOPE_NODE) { subtractScope(); subtract_reg_scope();}
 }
 
 static int indentation = 0;

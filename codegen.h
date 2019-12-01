@@ -14,4 +14,17 @@
 
 extern "C" void genCode(AstNode* ast);
 
+
+
+
+
+void add_reg_scope();
+
+void subtract_reg_scope();
+
+
+
+
+
+
 #endif

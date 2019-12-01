@@ -2,6 +2,7 @@
 bool in_variable_assign = false;
 #include "symbol.h"
 #include  "parser.tab.h"
+#include "codegen.h"
 #include "common.h"
 #include <stdlib.h>
 #include <stdio.h> 
@@ -474,7 +475,9 @@ void semantic_check_node(AstNode* node) {
                                        bool initiated = (AstNode*)node->declaration.expression != (AstNode*)NULL;
                                        // Ask on piazza and decide const checks.
                                        addToSymbolTable(node->declaration.id, node->declaration.type->type.type, node->declaration.is_const, initiated);
-                                   }
+
+
+				}
                                    else{
                                        ERROR("Error(line %i): redecleartion of variable \"%s\" in same scope\n", line, node->declaration.id);
                                    }

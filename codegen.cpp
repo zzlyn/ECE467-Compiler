@@ -26,6 +26,10 @@ using namespace std;
 
 static const std::string ASB_FILE_NAME = "asb.txt";
 extern "C" void assembly_print(node *n);
+//http://www.eecg.toronto.edu/~jzhu/csc467/readings/csc467_finalVersion.pdf?fbclid=IwAR1jw3sOREgfYkC337wigX_8yIfPZlfUpH8kBLUJ8CMIxF6NaCQ9QzKoX3E
+
+
+
 
 
 void assembly_check(AstNode* node);
@@ -33,6 +37,15 @@ void assembly_check(AstNode* node);
 std::vector<std::vector<std::string>> used_reg_names;
 std::vector<std::string> free_reg_names;
 int max_register = 0;
+
+void add_reg_scope(){
+	vector<std::string> new_scope;
+	used_reg_names.push_back(new_scope);
+}
+
+void subtract_reg_scope(){
+        used_reg_names.pop_back();
+}
 
 
 void add_used_name( string reg_name){
@@ -50,6 +63,7 @@ std::string gen_new_reg_name(){
 	std::string new_reg_name =  "temp_" + to_string(max_register);
 	add_used_name(new_reg_name);
 	max_register = max_register + 1;
+	//td::cout << "Generated name is "<< new_reg_name << std::endl;
 	return new_reg_name;
 }
 
@@ -82,6 +96,8 @@ std::string  get_new_reg_name(char * var_name){
 	if(var_name != NULL){
 		assign_reg_name(var_name,return_name);
 	}
+
+	//std::cout << "Return name is "<< return_name << std::endl;
 	return return_name;
 } 
 
@@ -112,6 +128,22 @@ std::string  get_assembly_line(node * n){
 	}
 
 
+
+	assembly_arg * assembly_args = n->assembly_args;
+
+	if(assembly_args == NULL){
+		to_return.append(" No args");
+	}
+
+
+	else {
+		while(assembly_args != NULL){
+			to_return.append(assembly_args->reg_name);
+			to_return.append(" ");
+			assembly_args = assembly_args-> next_arg; 
+		}
+	}
+
 	return to_return; 
 }
 
@@ -137,13 +169,28 @@ void assembly_check_node(AstNode* node) {
         case SCOPE_NODE:
             break;
 
-        case DECLARATIONS_NODE:
-            break;
+        case DECLARATIONS_NODE:{
+			}
 
         case STATEMENTS_NODE:	break;
         case UNARY_EXPRESSION_NODE:	break;// Needs to set ExprEval.
         case BINARY_EXPRESSION_NODE:	break; // Needs to set ExprEval.
-        case DECLARATION_NODE:	break;
+        case DECLARATION_NODE:{	
+                                //printf("In the declaration node \n");
+                                char * id = node->declaration.id;
+				addToSymbolTable(id, 1 , 1 , 1);
+				//node->instruction = "TEMP";
+				//std::string to_print = get_assembly_line(node);
+				//std::cout << "Assemnbl;y line is " << to_print << std::endl;
+
+				//std::cout <<"Node is " << id << std::endl;
+				std::string reg_name = get_new_reg_name(id);
+				//std::cout << "Reg name is " << reg_name << std::endl ;
+				//std::cout << "Reg name is " << get_reg_name(id) << std::endl ;
+				std::cout << "TEMP " << reg_name << ";" << std::endl;
+
+				break;
+			}
         case VAR_NODE:	break;
         case TYPE_NODE:	break;
         case IF_STATEMENT_NODE:	break;
