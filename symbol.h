@@ -24,6 +24,7 @@ class varType {
 
 const char * get_reg_name(char * var_name);
 int does_var_have_regname(char * var_name);
+void assign_reg_name(char * var_name, std::string new_reg_name); 
 
 
 

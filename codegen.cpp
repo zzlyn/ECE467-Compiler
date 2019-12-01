@@ -28,41 +28,61 @@ static const std::string ASB_FILE_NAME = "asb.txt";
 extern "C" void assembly_print(node *n);
 
 
+void assembly_check(AstNode* node);
 
 std::vector<std::vector<std::string>> used_reg_names;
 std::vector<std::string> free_reg_names;
 int max_register = 0;
 
+
+void add_used_name( string reg_name){
+        int scope_depth = used_reg_names.size() - 1;
+        if(scope_depth >= 0){
+                used_reg_names[scope_depth].push_back(reg_name);
+        }
+        else{
+                printf("ISSUE WITH add_used_name FUNCTION \n");
+        }
+}
+
 // Creates a new register name if you need it 
 std::string gen_new_reg_name(){
-	string new_reg_name =  "temp_" + to_string(max_register);
-	int scope_depth = used_reg_names.size() - 1;
-	if(scope_depth >= 0){	
-		used_reg_names[scope_depth].push_back(new_reg_name);
-	}
-	else{
-		printf("ISSUE WITH gen_new_reg_name FUNCTION \n");
-	}
+	std::string new_reg_name =  "temp_" + to_string(max_register);
+	add_used_name(new_reg_name);
 	max_register = max_register + 1;
 	return new_reg_name;
 }
 
 // gets a register for someone to use 
-// If null it is a temporary register
+// If null it is a temporary register and you need to create a name
 // If not null get the reg name from symbol table
-std::string  get_reg_name(char * var_name){
+std::string  get_new_reg_name(char * var_name){
 
 
 	if(var_name != NULL){
+		// this checks synbol table
+		if(does_var_have_regname(var_name)){
+			return get_reg_name(var_name);
+		}
+	}
 
-
+	int num_free_names = free_reg_names.size() ;
+	std::string return_name;	
+	if(num_free_names >  0){
+		return_name = free_reg_names[num_free_names - 1];
+		free_reg_names.pop_back();
+		add_used_name( return_name); 
 	}
 
 	else{
-
-
-
+		return_name = gen_new_reg_name();
 	}
+
+
+	if(var_name != NULL){
+		assign_reg_name(var_name,return_name);
+	}
+	return return_name;
 } 
 
 
@@ -70,6 +90,8 @@ std::string  get_reg_name(char * var_name){
 
 extern "C" void genCode(AstNode* ast) {
     printf("genCode start\n");    
+	assembly_check(ast);
+
 //	assembly_print(ast);
 }
 
@@ -95,227 +117,47 @@ std::string  get_assembly_line(node * n){
 
 
 
+void assembly_check_node(AstNode* node) {
+    if (node == NULL) return;
 
-static int indentation = 0;
 
-
-
-void assembly_print(node *n) {
-
-    if (n == NULL) {
-        return;
-    }
-
-    switch(n->kind) {
-        case INT_NODE:
-            PRINT_DUMP("%i", n->integer.val);
+    switch(node->kind) {
+        case INT_NODE: // Needs to set ExprEval.
             break;
 
-        case FLOAT_NODE:
-            PRINT_DUMP("%f", n->float_num.val);
+        case FLOAT_NODE: // Needs to set ExprEval.
             break;
 
-        case BOOL_NODE:
-            if (n->boolean.val) {
-                PRINT_DUMP("true");
-            } else {
-                PRINT_DUMP("false");
-            }
+        case BOOL_NODE: // Needs to set ExprEval.
             break;
 
         case PROGRAM_NODE:
-            PRINT_DUMP("(PROGRAM \n");
-            indentation++;
-	    n->instruction = (char * ) malloc(sizeof(char) * 1 );
-            assembly_print(n->program.scope);
-            indentation--;
-            PRINT_DUMP(")\n");
             break;
 
         case SCOPE_NODE:
-            PRINT_DUMP("(SCOPE \n");
-
-            indentation++;
-
-            assembly_print(n->scope.declarations);
-            // One empty line between to make things look nicer.
-            if (n->scope.declarations)
-                PRINT_DUMP("\n");
-            assembly_print(n->scope.statements);
-
-            indentation--;
-
-            PRINT_DUMP(")\n");
             break;
 
-        case DECLARATIONS_NODE: {
-                                    // Reverse declarations order from bottom up to top down.
+        case DECLARATIONS_NODE:
+            break;
 
-					n->instruction = (char*) malloc(2 * sizeof(char));
-					*(n->instruction) = 'c';
-					*(n->instruction  + 1) = '\0';
-					printf("Value is %s\n", n->instruction);
+        case STATEMENTS_NODE:	break;
+        case UNARY_EXPRESSION_NODE:	break;// Needs to set ExprEval.
+        case BINARY_EXPRESSION_NODE:	break; // Needs to set ExprEval.
+        case DECLARATION_NODE:	break;
+        case VAR_NODE:	break;
+        case TYPE_NODE:	break;
+        case IF_STATEMENT_NODE:	break;
+        case ASSIGNMENT_NODE:	break;
+        case CONSTRUCTOR_NODE:	break;
+        case FUNCTION_NODE:	break;
+        case ARGUMENTS_NODE:	break;
+	}
 
-
-					std::string decl_string = get_assembly_line(n);
-					std::cout << "What ya got :" <<  decl_string.c_str() << std::endl;
-                                    AstNode* prev = NULL;
-                                    while(n != NULL) {
-                                        AstNode* next = n->declarations.declarations;
-                                        n->declarations.declarations = prev;
-                                        prev = n;
-                                        n = next;
-                                    }
-                                    n = prev;
-
-                                    PRINT_DUMP("(DECLARATIONS \n");
-                                    indentation++;
-
-                                    AstNode* tmp = n;
-                                    while(tmp != NULL) {
-                                        assembly_print(tmp->declarations.declaration);
-                                        tmp = tmp->declarations.declarations;
-                                    }
-
-                                    indentation--;
-                                    PRINT_DUMP(")\n");
-                                    break;
-                                }
-
-        case STATEMENTS_NODE: {
-                                  // Reverse statements order from bottom up to top down.
-                                  AstNode* prev = NULL;
-                                  while(n != NULL) {
-                                      AstNode* next = n->statements.statements;
-                                      n->statements.statements = prev;
-                                      prev = n;
-                                      n = next;
-                                  }
-                                  n = prev;
-
-                                  PRINT_DUMP("(STATEMENTS \n");
-                                  indentation++;
-
-                                  AstNode* tmp = n;
-                                  while(tmp != NULL) {
-                                      assembly_print(tmp->statements.statement);
-                                      tmp = tmp->statements.statements;
-                                  }
-
-                                  indentation--;
-                                  PRINT_DUMP(")\n");
-                                  break;
-                              }
-
-        case UNARY_EXPRESSION_NODE: {
-                                        PRINT_DUMP("(UNARY ");
-
-                                        std::string type = var_type_to_str(ExprNodeToType(n->unary_expr.right));
-                                        std::string symbol = n->unary_expr.op == MINUS ? "- " : "! ";
-
-                                        PRINT_DUMP("%s %s", type.c_str(), symbol.c_str());
-                                        assembly_print(n->unary_expr.right);
-                                        PRINT_DUMP(")");
-                                        break;
-                                    }
-
-        case BINARY_EXPRESSION_NODE: {
-                                         PRINT_DUMP("(BINARY ");
-                                         // Print type.
-                                         PRINT_DUMP("%s ", var_type_to_str(ExprNodeToType(n)).c_str());
-                                         // Print operation.
-                                         //PRINT_DUMP("%s ", binary_op_to_str(n->binary_expr.op).c_str());
-                                         // Print left and right.
-                                         assembly_print(n->binary_expr.left);
-                                         PRINT_DUMP(" ");
-                                         assembly_print(n->binary_expr.right);
-
-                                         PRINT_DUMP(")");
-                                         break;
-                                     }
-
-        case DECLARATION_NODE:
-                                     PRINT_DUMP("(DECLARATION ");
-                                     // variable_name type_name initial_value
-                                     assembly_print(n->declaration.type);
-                                     PRINT_DUMP("%s %s ", n->declaration.id, n->declaration.type->type.to_str);
-                                     assembly_print(n->declaration.expression);
-                                     PRINT_DUMP(")\n");
-                                     break;
-
-        case VAR_NODE:
-                                     if (!n->variable.deref) {
-                                         PRINT_DUMP("%s", n->variable.id);
-                                     } else {
-                                         // INDEX type id index.
-                                         PRINT_DUMP("(INDEX %s %s %i)", var_type_to_str(n->variable.var_type).c_str(), n->variable.id, n->variable.index);
-                                     }
-                                     break;
-
-        case TYPE_NODE:
-                                     break;
-
-        case IF_STATEMENT_NODE:
-                                     PRINT_DUMP("(IF ");
-                                     indentation++;
-                                     assembly_print(n->if_statement.condition);
-                                     PRINT_DUMP("\n");
-
-                                     assembly_print(n->if_statement.statement);
-
-                                     if (n->if_statement.else_statement != NULL) {
-                                         indentation--;
-                                         PRINT_DUMP(" ELSE\n");
-                                         indentation++;
-                                         assembly_print(n->if_statement.else_statement);
-                                     }
-
-                                     indentation--;
-                                     PRINT_DUMP(")\n");
-                                     break;
-
-        case ASSIGNMENT_NODE:
-                                     // ASSIGN type variable_name new_value
-                                     PRINT_DUMP("(ASSIGN %s %s ", var_type_to_str(n->assignment.variable->variable.var_type).c_str(),n->assignment.variable->variable.id);
-                                     assembly_print(n->assignment.expression);
-                                     PRINT_DUMP(")\n");
-                                     break;
-
-        case CONSTRUCTOR_NODE:
-                                     PRINT_DUMP("(CALL %s ", n->constructor.type->type.to_str);
-                                     assembly_print(n->constructor.arguments);
-                                     PRINT_DUMP(")");
-                                     break;
-
-        case FUNCTION_NODE:
-                                     PRINT_DUMP("(CALL %s ", n->function.name);
-                                     assembly_print(n->function.arguments);
-                                     PRINT_DUMP(")");
-                                     break;
-
-        case ARGUMENTS_NODE: {
-                                 AstNode* prev = NULL;
-                                 // Reverse arguments.
-                                 while(n != NULL) {
-                                     AstNode* next = n->arguments.arguments;
-                                     n->arguments.arguments = prev;
-                                     prev = n;
-                                     n = next;
-                                 }
-                                 n = prev;
-
-                                 AstNode* tmp = n;
-                                 while(tmp != NULL) {
-                                     assembly_print(tmp->arguments.expression);
-                                     std::string suffix = tmp->arguments.arguments != NULL ? ", " : "";
-                                     PRINT_DUMP(suffix.c_str());
-                                     tmp = tmp->arguments.arguments;
-                                 }
-                                 break;
-                             }
-
-        default: break;
-    }
+}	
+                                                                                                                                    
+void assembly_check(AstNode* node){
+    ast_traverse_post(node, &assembly_check_node);
 }
+
 
 

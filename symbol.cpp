@@ -80,6 +80,11 @@ const char * get_reg_name(char * var_name){
 }
 
 
+void assign_reg_name(char * var_name, string new_reg_name){
+	                int var_scope = getVarScope(var_name);
+			symbolTable[var_scope][var_name].reg_name = new_reg_name;
+}
+
 
 // Call whenever you enter a new scope  
 extern "C" void addScope(){
