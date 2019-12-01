@@ -55,7 +55,7 @@ int does_var_have_regname(char * var_name){
 
 const char * get_reg_name(char * var_name){
         if(predefinedVarnameCheck(var_name)){
-		if (!strcmp(var_name,"gl_Color" )){ return "result.color";}
+		if (!strcmp(var_name,"gl_FragColor" )){ return "result.color";}
 		if (!strcmp(var_name,"gl_FragDepth" )){ return "result.depth";}
 		if (!strcmp(var_name,"gl_FragCoord" )){ return "fragment.position";}
 		if (!strcmp(var_name,"gl_TexCoord" )){ return "fragment.texcoord";}

@@ -30,7 +30,26 @@ extern "C" void assembly_print(node *n);
 
 
 
+std::string get_index_string(int index){
+	if(index == 0){
+		return "";
+	}
 
+
+        if(index == 1){
+                return ".x";
+        }
+        if(index == 2){
+                return ".y";
+        }
+        if(index == 3){
+                return ".z";
+        }
+        if(index == 4){
+                return ".w";
+        }
+	return "ERROR in get_index_string";
+}
 
 void assembly_check(AstNode* node);
 
@@ -192,11 +211,40 @@ void assembly_check_node(AstNode* node) {
 				if(node->declaration.expression == NULL){
 					std::cout << "MOV " << reg_name << " 0.00000;" << std::endl;
 				}
+
+				else {
+					//DO SOMETHING IF INITILIZED
+
+				}
 	
 
 				break;
 			}
-        case VAR_NODE:	break;
+        case VAR_NODE:	{
+
+				std::cout << "In var node " << std::endl;
+				//std:: cout << "Var name is " << node->variable. id << std::endl;
+				//std::cout << "Index is " << node->variable.index << std::endl;
+				//std::cout <<"Index assembly string is " << get_index_string(node->variable.index) << std::endl;
+				string reg_name  = get_reg_name(node->variable. id);
+				string index_string =  get_index_string(node->variable.index);
+				reg_name = reg_name + index_string;
+				std::cout << "Reg name is " << reg_name << std::endl;
+
+//is_const;
+// int var_type; // Assigned during semantic check.
+// char* id;
+//int index; // Dereference index, set to 0 if id is stand alone.
+//bool deref;
+ //variable;
+
+
+
+
+
+
+				break;
+			}
         case TYPE_NODE:	break;
         case IF_STATEMENT_NODE:	break;
         case ASSIGNMENT_NODE:	break;
