@@ -95,6 +95,9 @@ void assembly_check(AstNode* node);
 
 std::vector<std::vector<std::string>> used_reg_names;
 std::vector<std::string> free_reg_names;
+std::vector<std::string> if_reg_names;
+
+
 int max_register = 0;
 bool created_new_reg = false;
 
@@ -215,16 +218,42 @@ std::string  get_assembly_line(node * n){
 void assembly_check_node(AstNode* node) {
     if (node == NULL) return;
 
-
     switch(node->kind) {
-        case INT_NODE: // Needs to set ExprEval.
-            break;
+        case INT_NODE: {// Needs to set ExprEval.
+		            break;
 
-        case FLOAT_NODE: // Needs to set ExprEval.
-            break;
 
-        case BOOL_NODE: // Needs to set ExprEval.
-            break;
+				node->result_reg = str_to_char(to_string(node->integer.val));
+//struct {
+//            int val;
+//        } integer;
+
+
+
+			}
+
+        case FLOAT_NODE: {// Needs to set ExprEval.
+                                node->result_reg = str_to_char(to_string(node->float_num.val));
+
+//struct {
+//            float val;
+//        } float_num;
+
+		            break;
+
+
+			}
+
+        case BOOL_NODE: {// Needs to set ExprEval.
+
+                                node->result_reg = str_to_char(to_string(node->boolean.val));
+
+//  struct {
+//            bool val;
+//        } boolean
+
+				break;
+			}
 
         case PROGRAM_NODE:
             break;
@@ -301,11 +330,69 @@ void assembly_check_node(AstNode* node) {
 				break;
 			}
         case TYPE_NODE:	break;
-        case IF_STATEMENT_NODE:	break;
-        case ASSIGNMENT_NODE:	break;
+        case IF_STATEMENT_NODE:{
+
+				std::cout << "In if statement yooooooo" << std::endl;
+				break;
+
+
+				}
+        case ASSIGNMENT_NODE:{
+
+// struct {
+//            AstNode* variable; // Contains type info.
+//            AstNode* expression;
+//        } assignment;
+
+				char *  result_name =  node->assignment.variable->result_reg;
+                                char *  expression_name =  node->assignment.expression->result_reg;
+
+
+				std::cout << "MOV " <<result_name << ", " <<  expression_name <<std::endl;
+
+				break;
+
+
+
+			}
         case CONSTRUCTOR_NODE:	break;
-        case FUNCTION_NODE:	break;
-        case ARGUMENTS_NODE:	break;
+        case FUNCTION_NODE:{
+
+
+//  char* name;
+//  AstNode* arguments;
+					std::string reg_name = get_new_reg_name(NULL);
+                                        node->result_reg = str_to_char(reg_name);
+                                        //cout <<  node->function.name << " " << reg_name ;
+
+				//std::cout << "Function name is " << node->function.name << std::endl;
+				AstNode* func_args =  node->function.arguments; 
+
+//AstNode* arguments;
+//AstNode* expression;
+				 std::cout << node->function.name << " " << reg_name;
+				while(func_args != NULL){
+					cout << ", " << func_args->result_reg;
+					//cout << "Expression reg is " << func_args->result_reg;
+					func_args = func_args->arguments.arguments;
+				}
+				std::cout << std::endl;
+
+				break;
+
+
+			}
+        case ARGUMENTS_NODE:{
+
+				node->result_reg = node->arguments.expression->result_reg;
+				break;
+
+
+			}
+
+			
+
+
 	}
 
 	created_new_reg = false;
