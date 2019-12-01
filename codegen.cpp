@@ -189,6 +189,11 @@ void assembly_check_node(AstNode* node) {
 				//std::cout << "Reg name is " << get_reg_name(id) << std::endl ;
 				std::cout << "TEMP " << reg_name << ";" << std::endl;
 
+				if(node->declaration.expression == NULL){
+					std::cout << "MOV " << reg_name << " 0.00000;" << std::endl;
+				}
+	
+
 				break;
 			}
         case VAR_NODE:	break;
