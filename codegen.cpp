@@ -96,6 +96,7 @@ void assembly_check(AstNode* node);
 std::vector<std::vector<std::string>> used_reg_names;
 std::vector<std::string> free_reg_names;
 int max_register = 0;
+bool created_new_reg = false;
 
 void add_reg_scope(){
 	vector<std::string> new_scope;
@@ -119,10 +120,13 @@ void add_used_name( string reg_name){
 
 // Creates a new register name if you need it 
 std::string gen_new_reg_name(){
+	created_new_reg = true;
 	std::string new_reg_name =  "temp_" + to_string(max_register);
 	add_used_name(new_reg_name);
 	max_register = max_register + 1;
 	//td::cout << "Generated name is "<< new_reg_name << std::endl;
+        std::cout << "TEMP " << new_reg_name << ";" << std::endl;
+
 	return new_reg_name;
 }
 
@@ -251,8 +255,8 @@ void assembly_check_node(AstNode* node) {
                                         //std::cout <<"Op is " << binary_op_inst  << std::endl;
 					std::string reg_name = get_new_reg_name(NULL);
 					node->result_reg = str_to_char(reg_name);
-					std::cout << binary_op_inst << " " << reg_name << " " ;
-                                        std::cout << left_name << " " << right_name << std::endl;
+					std::cout << binary_op_inst << " " << reg_name << ", " ;
+                                        std::cout << left_name << ", " << right_name << std::endl;
 
 
 					break; // Needs to set ExprEval.
@@ -271,7 +275,7 @@ void assembly_check_node(AstNode* node) {
 				node->result_reg = str_to_char(reg_name);
 				//std::cout << "Reg name is " << reg_name << std::endl ;
 				//std::cout << "Reg name is " << get_reg_name(id) << std::endl ;
-				std::cout << "TEMP " << reg_name << ";" << std::endl;
+				//std::cout << "TEMP " << reg_name << ";" << std::endl;
 				if(node->declaration.expression == NULL){
 					std::cout << "MOV " << reg_name << " 0.00000;" << std::endl;
 				}
@@ -304,6 +308,7 @@ void assembly_check_node(AstNode* node) {
         case ARGUMENTS_NODE:	break;
 	}
 
+	created_new_reg = false;
 }	
                                                                                                                                     
 void assembly_check(AstNode* node){
