@@ -68,7 +68,6 @@ typedef struct ExpressionEvaluation{
 
 typedef struct assembly_argument{
 	char * reg_name;
-	char * index;
 	struct assembly_argument * next_arg;
 } assembly_arg;
 
@@ -89,6 +88,7 @@ struct node_ {
 
     // Instructions for assembly stuff
     char * instruction = NULL;	
+	char * result_reg = NULL;
     assembly_arg * assembly_args = NULL;
 
     union {

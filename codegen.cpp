@@ -30,22 +30,22 @@ extern "C" void assembly_print(node *n);
 
 
 
-std::string get_index_string(int index){
-	if(index == 0){
+std::string get_index_string(int deref, int index){
+	if( deref == 0){
 		return "";
 	}
 
 
-        if(index == 1){
+        if(index == 0){
                 return ".x";
         }
-        if(index == 2){
+        if(index == 1){
                 return ".y";
         }
-        if(index == 3){
+        if(index == 2){
                 return ".z";
         }
-        if(index == 4){
+        if(index == 3){
                 return ".w";
         }
 	return "ERROR in get_index_string";
@@ -198,12 +198,15 @@ void assembly_check_node(AstNode* node) {
                                 //printf("In the declaration node \n");
                                 char * id = node->declaration.id;
 				addToSymbolTable(id, 1 , 1 , 1);
-				//node->instruction = "TEMP";
+				node->instruction = "NO_OP";
 				//std::string to_print = get_assembly_line(node);
 				//std::cout << "Assemnbl;y line is " << to_print << std::endl;
 
 				//std::cout <<"Node is " << id << std::endl;
 				std::string reg_name = get_new_reg_name(id);
+
+				node->result_reg = (char*)reg_name.c_str();
+
 				//std::cout << "Reg name is " << reg_name << std::endl ;
 				//std::cout << "Reg name is " << get_reg_name(id) << std::endl ;
 				std::cout << "TEMP " << reg_name << ";" << std::endl;
@@ -222,26 +225,17 @@ void assembly_check_node(AstNode* node) {
 			}
         case VAR_NODE:	{
 
+                                node->instruction = "NO_OP";
+
 				std::cout << "In var node " << std::endl;
 				//std:: cout << "Var name is " << node->variable. id << std::endl;
 				//std::cout << "Index is " << node->variable.index << std::endl;
 				//std::cout <<"Index assembly string is " << get_index_string(node->variable.index) << std::endl;
-				string reg_name  = get_reg_name(node->variable. id);
-				string index_string =  get_index_string(node->variable.index);
+				string reg_name  = get_reg_name( node->variable. id);
+				string index_string =  get_index_string(node->variable. deref,node->variable.index);
 				reg_name = reg_name + index_string;
-				std::cout << "Reg name is " << reg_name << std::endl;
-
-//is_const;
-// int var_type; // Assigned during semantic check.
-// char* id;
-//int index; // Dereference index, set to 0 if id is stand alone.
-//bool deref;
- //variable;
-
-
-
-
-
+                                node->result_reg = (char*)reg_name.c_str();
+				//std::cout << "Reg name is " <<  node->result_reg << std::endl;
 
 				break;
 			}
