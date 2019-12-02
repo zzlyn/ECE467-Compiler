@@ -397,7 +397,7 @@ void assembly_check_node(AstNode* node) {
                                    //cout << "Expression reg is " << func_args->result_reg;
                                    func_args = func_args->arguments.arguments;
                                }
-                               std::cout << std::endl;
+                               std::cout << " ;" << std::endl;
 
                                break;
 
