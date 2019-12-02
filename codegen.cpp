@@ -286,7 +286,7 @@ void assembly_check_node(AstNode* node) {
                                         std::string reg_name = get_new_reg_name(NULL);
                                         node->result_reg = str_to_char(reg_name);
                                         std::cout << binary_op_inst << " " << reg_name << ", " ;
-                                        std::cout << left_name << ", " << right_name << std::endl;
+                                        std::cout << left_name << ", " << right_name << ";" << std::endl;
 
                                         break; // Needs to set ExprEval.
 
@@ -306,7 +306,7 @@ void assembly_check_node(AstNode* node) {
                                   //std::cout << "Reg name is " << get_reg_name(id) << std::endl ;
                                   //std::cout << "TEMP " << reg_name << ";" << std::endl;
                                   if(node->declaration.expression == NULL){
-                                      std::cout << "MOV " << reg_name << " 0.00000;" << std::endl;
+                                      std::cout << "MOV " << reg_name << ",  0.00000;" << std::endl;
                                   }
 
                                   else {
@@ -347,7 +347,7 @@ void assembly_check_node(AstNode* node) {
                                  char *  expression_name =  node->assignment.expression->result_reg;
 
 
-                                 std::cout << "MOV " <<result_name << ", " <<  expression_name <<std::endl;
+                                 std::cout << "MOV " <<result_name << ", " <<  expression_name << " ;" << std::endl;
 
                                  break;
 
