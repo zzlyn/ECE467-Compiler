@@ -257,6 +257,113 @@ std::string binary_op_to_str(int op) {
     return str;
 }
 
+void ast_traverse_post_if_optimized(node *ast, NodeFunc post_call) {
+
+    if (ast == NULL) {
+        return;
+    }
+
+    switch(ast->kind) {
+        case INT_NODE:
+            break;
+
+        case FLOAT_NODE:
+            break;
+
+        case BOOL_NODE:
+            break;
+
+        case PROGRAM_NODE:
+            ast_traverse_post_if_optimized(ast->program.scope, post_call);
+            break;
+
+        case SCOPE_NODE:
+            addScope();
+		add_reg_scope();
+            ast_traverse_post_if_optimized(ast->scope.declarations, post_call);
+            ast_traverse_post_if_optimized(ast->scope.statements, post_call);
+            break;
+
+        case DECLARATIONS_NODE:
+            ast_traverse_post_if_optimized(ast->declarations.declarations, post_call);
+            ast_traverse_post_if_optimized(ast->declarations.declaration, post_call);
+            break;
+
+        case STATEMENTS_NODE:
+            ast_traverse_post_if_optimized(ast->statements.statements, post_call);
+            ast_traverse_post_if_optimized(ast->statements.statement, post_call);
+            break;
+
+        case UNARY_EXPRESSION_NODE:
+            ast_traverse_post_if_optimized(ast->unary_expr.right, post_call);
+            break;
+
+        case BINARY_EXPRESSION_NODE:
+            ast_traverse_post_if_optimized(ast->binary_expr.left, post_call);
+            ast_traverse_post_if_optimized(ast->binary_expr.right, post_call);
+            break;
+
+        case DECLARATION_NODE:
+            ast_traverse_post_if_optimized(ast->declaration.expression, post_call);
+            break;
+
+        case VAR_NODE:
+            break;
+
+        case TYPE_NODE:
+            break;
+
+        case IF_STATEMENT_NODE: {
+            ast_traverse_post_if_optimized(ast->if_statement.condition, post_call);
+            // Direct evaluation.
+            AstNode* cond = ast->if_statement.condition;
+            if (cond->kind == BOOL_NODE) {
+                if (cond->boolean.val) {
+                    // Execute statement only. Free else_statement.
+                    // ast_free(ast->if_statement.else_statement);
+                    ast->if_statement.else_statement = NULL;
+                } else {
+                    // Execute else_statement only.
+                    // ast_free(ast->if_statement.statement);
+                    ast->if_statement.statement = NULL;
+                }
+            }
+            in_ifelse_scope = true;
+            ast_traverse_post_if_optimized(ast->if_statement.statement, post_call);
+            ast_traverse_post_if_optimized(ast->if_statement.else_statement, post_call);
+            in_ifelse_scope = false;
+            break;
+                                }
+
+        case ASSIGNMENT_NODE:
+            in_variable_assign = true;
+            ast_traverse_post_if_optimized(ast->assignment.variable, post_call);
+            in_variable_assign = false;
+            ast_traverse_post_if_optimized(ast->assignment.expression, post_call);
+            break;
+
+        case CONSTRUCTOR_NODE:
+            ast_traverse_post_if_optimized(ast->constructor.type, post_call);
+            ast_traverse_post_if_optimized(ast->constructor.arguments, post_call);
+            break;
+
+        case FUNCTION_NODE:
+            ast_traverse_post_if_optimized(ast->function.arguments, post_call);
+            break;
+
+        case ARGUMENTS_NODE:
+            ast_traverse_post_if_optimized(ast->arguments.arguments, post_call);
+            ast_traverse_post_if_optimized(ast->arguments.expression, post_call);
+            break;
+
+            // ...
+
+        default: break;
+    }
+    if (post_call) post_call(ast);
+    if (ast->kind == SCOPE_NODE) { subtractScope(); subtract_reg_scope();}
+}
+
 void ast_traverse_post(node *ast, NodeFunc post_call) {
 
     if (ast == NULL) {

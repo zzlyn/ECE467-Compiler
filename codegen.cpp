@@ -330,8 +330,7 @@ void assembly_check_node(AstNode* node) {
                         }
         case TYPE_NODE:	break;
         case IF_STATEMENT_NODE:{
-
-                                   std::cout << "In if statement yooooooo" << std::endl;
+                            // Do nothing as this is post traversal.
                                    break;
 
 
@@ -398,7 +397,7 @@ void assembly_check_node(AstNode* node) {
 }	
 
 void assembly_check(AstNode* node){
-    ast_traverse_post(node, &assembly_check_node);
+    ast_traverse_post_if_optimized(node, &assembly_check_node);
 }
 
 
