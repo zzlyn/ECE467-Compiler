@@ -171,8 +171,9 @@ std::string  get_new_reg_name(char * var_name){
 
 
 void genCode(AstNode* ast) {
-    printf("genCode start\n");    
+    printf("!!ARBfp1.0\n");    
     assembly_check(ast);
+    printf("END\n");
 
     //	assembly_print(ast);
 }
