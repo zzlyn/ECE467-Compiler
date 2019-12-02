@@ -17,6 +17,9 @@
 extern int yyline;
 
 bool in_ifelse_scope = false;
+AstNode* if_cond_node = NULL;
+bool in_if_stmt = false;
+bool in_else_stmt = false;
 
 node *ast = NULL;
 
@@ -316,6 +319,7 @@ void ast_traverse_post_if_optimized(node *ast, NodeFunc post_call) {
         case IF_STATEMENT_NODE: {
             ast_traverse_post_if_optimized(ast->if_statement.condition, post_call);
             // Direct evaluation.
+            /*
             AstNode* cond = ast->if_statement.condition;
             if (cond->kind == BOOL_NODE) {
                 if (cond->boolean.val) {
@@ -328,9 +332,16 @@ void ast_traverse_post_if_optimized(node *ast, NodeFunc post_call) {
                     ast->if_statement.statement = NULL;
                 }
             }
+            */
             in_ifelse_scope = true;
+            if_cond_node = ast->if_statement.condition;
+            in_if_stmt = true;
             ast_traverse_post_if_optimized(ast->if_statement.statement, post_call);
+            in_if_stmt = false;
+            in_else_stmt = true;
             ast_traverse_post_if_optimized(ast->if_statement.else_statement, post_call);
+            in_else_stmt = false;
+            if_cond_node = NULL;
             in_ifelse_scope = false;
             break;
                                 }

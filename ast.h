@@ -20,8 +20,11 @@ typedef struct node_ node;
 typedef struct node_ AstNode;
 extern node *ast;
 
+extern AstNode* if_cond_node;
 extern bool in_variable_assign;
 extern bool in_ifelse_scope;
+extern bool in_if_stmt;
+extern bool in_else_stmt;
 
 typedef enum {
     UNKNOWN               = 0,

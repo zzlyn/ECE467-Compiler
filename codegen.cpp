@@ -215,6 +215,13 @@ std::string  get_assembly_line(node * n){
 }
 
 
+void print_assign_if_stmt(string orig_reg, string expr_reg) {
+    cout << "CMP " << orig_reg << ", " << if_cond_node->result_reg << ", " << orig_reg << ", " << expr_reg << " ;" << std::endl;
+}
+
+void print_assign_else_stmt(string orig_reg, string expr_reg) {
+    cout << "CMP " << orig_reg << ", " << if_cond_node->result_reg << ", " << expr_reg << ", " << orig_reg << " ;" << std::endl;
+}
 
 void assembly_check_node(AstNode* node) {
     if (node == NULL) return;
@@ -306,14 +313,25 @@ void assembly_check_node(AstNode* node) {
                                   //std::cout << "Reg name is " << get_reg_name(id) << std::endl ;
                                   //std::cout << "TEMP " << reg_name << ";" << std::endl;
                                   if(node->declaration.expression == NULL){
-                                      std::cout << "MOV " << reg_name << ",  0.00000;" << std::endl;
+                                      if (in_if_stmt) {
+                                        print_assign_if_stmt(reg_name, "0.00000");
+                                      } else if (in_else_stmt) {
+                                        print_assign_else_stmt(reg_name, "0.00000");
+                                      } else {
+                                        std::cout << "MOV " << reg_name << ",  0.00000;" << std::endl;
+                                      }
                                   }
 
                                   else {
                                       //DO SOMETHING IF INITILIZED
                                       AstNode* rhs = node->declaration.expression;
-
-                                      std::cout << "MOV " << node->result_reg << ", " << node->declaration.expression->result_reg << " ;" << std::endl;
+                                      if (in_if_stmt) {
+                                        print_assign_if_stmt(node->result_reg, node->declaration.expression->result_reg);
+                                      } else if (in_else_stmt) {
+                                        print_assign_else_stmt(node->result_reg, node->declaration.expression->result_reg);
+                                      } else {
+                                        std::cout << "MOV " << node->result_reg << ", " << node->declaration.expression->result_reg << " ;" << std::endl;
+                                      }
                                   } 
                                   break;
                               }
@@ -349,9 +367,13 @@ void assembly_check_node(AstNode* node) {
                                  char *  result_name =  node->assignment.variable->result_reg;
                                  char *  expression_name =  node->assignment.expression->result_reg;
 
-
-                                 std::cout << "MOV " <<result_name << ", " <<  expression_name << " ;" << std::endl;
-
+                                 if (in_if_stmt) {
+                                     print_assign_if_stmt(result_name, expression_name);
+                                 } else if (in_else_stmt) {
+                                    print_assign_else_stmt(result_name, expression_name);
+                                 } else {
+                                    std::cout << "MOV " <<result_name << ", " <<  expression_name << " ;" << std::endl;
+                                 }
                                  break;
 
 
@@ -368,7 +390,13 @@ void assembly_check_node(AstNode* node) {
                                     if (ctor_type == VEC2_T || ctor_type == VEC3_T || ctor_type == VEC4_T) {
                                            AstNode* args = node->constructor.arguments;
                                            while (args != NULL) {
-                                                cout << "MOV " << reg_name << "." << reg_indexes[reg_index] << ", " << args->arguments.expression->result_reg << " ;" << std::endl;
+                                                if (in_if_stmt) {
+                                                    print_assign_if_stmt(reg_name + "." + reg_indexes[reg_index], args->arguments.expression->result_reg);
+                                                } else if (in_else_stmt) {
+                                                    print_assign_else_stmt(reg_name + "." + reg_indexes[reg_index], args->arguments.expression->result_reg);
+                                                } else {
+                                                    cout << "MOV " << reg_name << "." << reg_indexes[reg_index] << ", " << args->arguments.expression->result_reg << " ;" << std::endl;
+                                                }
                                                 reg_index++;
                                                 args = args->arguments.arguments;
                                            }
