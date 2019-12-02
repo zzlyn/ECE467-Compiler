@@ -311,7 +311,10 @@ void assembly_check_node(AstNode* node) {
 
                                   else {
                                       //DO SOMETHING IF INITILIZED
-                                  }
+                                      AstNode* rhs = node->declaration.expression;
+
+                                      std::cout << "MOV " << node->result_reg << ", " << node->declaration.expression->result_reg << " ;" << std::endl;
+                                  } 
                                   break;
                               }
         case VAR_NODE:	{
@@ -354,7 +357,26 @@ void assembly_check_node(AstNode* node) {
 
 
                              }
-        case CONSTRUCTOR_NODE:	break;
+        case CONSTRUCTOR_NODE:	{
+                                    int ctor_type = node->constructor.type->type.type;
+                                    std::string reg_name = get_new_reg_name(NULL);
+                                    node->result_reg = str_to_char(reg_name);
+                                    
+                                    char reg_indexes[] = {'x', 'y', 'z', 'w'};
+                                    int reg_index = 0;
+
+                                    if (ctor_type == VEC2_T || ctor_type == VEC3_T || ctor_type == VEC4_T) {
+                                           AstNode* args = node->constructor.arguments;
+                                           while (args != NULL) {
+                                                cout << "MOV " << reg_name << "." << reg_indexes[reg_index] << ", " << args->arguments.expression->result_reg << " ;" << std::endl;
+                                                reg_index++;
+                                                args = args->arguments.arguments;
+                                           }
+                                    }
+
+                                    
+                                    break;
+                                }
         case FUNCTION_NODE:{
 
 
