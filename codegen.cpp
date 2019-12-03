@@ -22,6 +22,8 @@
 #define DEBUG_PRINT_TREE 0
 #define PRINT_DUMP(...) fprintf(dumpFile, __VA_ARGS__);
 
+#define PRINT_OUT(...) fprintf(outputFile, __VA_ARGS__);
+
 using namespace std; 
 
 static const std::string ASB_FILE_NAME = "asb.txt";
@@ -127,8 +129,8 @@ std::string gen_new_reg_name(){
     std::string new_reg_name =  "temp_" + to_string(max_register);
     add_used_name(new_reg_name);
     max_register = max_register + 1;
-    //td::cout << "Generated name is "<< new_reg_name << std::endl;
-    std::cout << "TEMP " << new_reg_name << ";" << std::endl;
+    PRINT_OUT("TEMP %s;\n", new_reg_name.c_str());
+    //std::cout << "TEMP " << new_reg_name << ";" << std::endl;
 
     return new_reg_name;
 }
@@ -163,7 +165,6 @@ std::string  get_new_reg_name(char * var_name){
         assign_reg_name(var_name,return_name);
     }
 
-    //std::cout << "Return name is "<< return_name << std::endl;
     return return_name;
 } 
 
@@ -216,11 +217,13 @@ std::string  get_assembly_line(node * n){
 
 
 void print_assign_if_stmt(string orig_reg, string expr_reg) {
-    cout << "CMP " << orig_reg << ", " << if_cond_node->result_reg << ", " << orig_reg << ", " << expr_reg << " ;" << std::endl;
+    PRINT_OUT("CMP %s, %s, %s, %s ;\n", orig_reg.c_str(), if_cond_node->result_reg, orig_reg.c_str(), expr_reg.c_str());
+    // cout << "CMP " << orig_reg << ", " << if_cond_node->result_reg << ", " << orig_reg << ", " << expr_reg << " ;" << std::endl;
 }
 
 void print_assign_else_stmt(string orig_reg, string expr_reg) {
-    cout << "CMP " << orig_reg << ", " << if_cond_node->result_reg << ", " << expr_reg << ", " << orig_reg << " ;" << std::endl;
+    PRINT_OUT("CMP %s, %s, %s, %s ;\n", orig_reg.c_str(), if_cond_node->result_reg, expr_reg.c_str(), orig_reg.c_str());
+    // cout << "CMP " << orig_reg << ", " << if_cond_node->result_reg << ", " << expr_reg << ", " << orig_reg << " ;" << std::endl;
 }
 
 void assembly_check_node(AstNode* node) {
@@ -281,19 +284,18 @@ void assembly_check_node(AstNode* node) {
                                         string binary_op_inst = binary_op_assembly_str(node->binary_expr.op);
                                         char * right_name = node->binary_expr.right->result_reg;
 
-                                        //if(right_name) std::cout <<" Right name is " << right_name << std::endl;
 
                                         char *  left_name =  node->binary_expr.left-> result_reg;
 
-                                        //if(left_name) std::cout <<"Left name is " << left_name << std::endl;
 
 
 
-                                        //std::cout <<"Op is " << binary_op_inst  << std::endl;
                                         std::string reg_name = get_new_reg_name(NULL);
                                         node->result_reg = str_to_char(reg_name);
-                                        std::cout << binary_op_inst << " " << reg_name << ", " ;
-                                        std::cout << left_name << ", " << right_name << ";" << std::endl;
+                                        PRINT_OUT("%s %s, ", binary_op_inst.c_str(), reg_name.c_str());
+                                        //std::cout << binary_op_inst << " " << reg_name << ", " ;
+                                        PRINT_OUT("%s, %s;\n", left_name, right_name);
+                                        //std::cout << left_name << ", " << right_name << ";" << std::endl;
 
                                         break; // Needs to set ExprEval.
 
@@ -305,20 +307,16 @@ void assembly_check_node(AstNode* node) {
                                   addToSymbolTable(id, 1 , 1 , 1);
                                   node->instruction = "NO_OP";
                                   //std::string to_print = get_assembly_line(node);
-                                  //std::cout << "Assemnbl;y line is " << to_print << std::endl;
-                                  //std::cout <<"Node is " << id << std::endl;
                                   std::string reg_name = get_new_reg_name(id);
                                   node->result_reg = str_to_char(reg_name);
-                                  //std::cout << "Reg name is " << reg_name << std::endl ;
-                                  //std::cout << "Reg name is " << get_reg_name(id) << std::endl ;
-                                  //std::cout << "TEMP " << reg_name << ";" << std::endl;
                                   if(node->declaration.expression == NULL){
                                       if (in_if_stmt) {
                                         print_assign_if_stmt(reg_name, "0.00000");
                                       } else if (in_else_stmt) {
                                         print_assign_else_stmt(reg_name, "0.00000");
                                       } else {
-                                        std::cout << "MOV " << reg_name << ",  0.00000;" << std::endl;
+                                        PRINT_OUT("MOV %s,  0.00000;\n", reg_name.c_str());
+                                        //std::cout << "MOV " << reg_name << ",  0.00000;" << std::endl;
                                       }
                                   }
 
@@ -330,7 +328,8 @@ void assembly_check_node(AstNode* node) {
                                       } else if (in_else_stmt) {
                                         print_assign_else_stmt(node->result_reg, node->declaration.expression->result_reg);
                                       } else {
-                                        std::cout << "MOV " << node->result_reg << ", " << node->declaration.expression->result_reg << " ;" << std::endl;
+                                        PRINT_OUT("MOV %s, %s ;\n", node->result_reg, node->declaration.expression->result_reg);
+                                        //std::cout << "MOV " << node->result_reg << ", " << node->declaration.expression->result_reg << " ;" << std::endl;
                                       }
                                   } 
                                   break;
@@ -338,15 +337,10 @@ void assembly_check_node(AstNode* node) {
         case VAR_NODE:	{
 
                             node->instruction = "NO_OP";
-                            //std::cout << "In var node " << std::endl;
-                            //std:: cout << "Var name is " << node->variable. id << std::endl;
-                            //std::cout << "Index is " << node->variable.index << std::endl;
-                            //std::cout <<"Index assembly string is " << get_index_string(node->variable.index) << std::endl;
                             string reg_name  = get_reg_name( node->variable. id);
                             string index_string =  get_index_string(node->variable. deref,node->variable.index);
                             reg_name = reg_name + index_string;
                             node->result_reg = str_to_char(reg_name);
-                            //std::cout << "Reg name is " <<  node->result_reg << std::endl;
 
                             break;
                         }
@@ -372,7 +366,8 @@ void assembly_check_node(AstNode* node) {
                                  } else if (in_else_stmt) {
                                     print_assign_else_stmt(result_name, expression_name);
                                  } else {
-                                    std::cout << "MOV " <<result_name << ", " <<  expression_name << " ;" << std::endl;
+                                    PRINT_OUT("MOV %s, %s ;\n", result_name, expression_name);
+                                    //std::cout << "MOV " <<result_name << ", " <<  expression_name << " ;" << std::endl;
                                  }
                                  break;
 
@@ -395,7 +390,8 @@ void assembly_check_node(AstNode* node) {
                                                 } else if (in_else_stmt) {
                                                     print_assign_else_stmt(reg_name + "." + reg_indexes[reg_index], args->arguments.expression->result_reg);
                                                 } else {
-                                                    cout << "MOV " << reg_name << "." << reg_indexes[reg_index] << ", " << args->arguments.expression->result_reg << " ;" << std::endl;
+                                                    PRINT_OUT("MOV %s.%c, %s ;\n", reg_name.c_str(), reg_indexes[reg_index], args->arguments.expression->result_reg);
+                                                    // cout << "MOV " << reg_name << "." << reg_indexes[reg_index] << ", " << args->arguments.expression->result_reg << " ;" << std::endl;
                                                 }
                                                 reg_index++;
                                                 args = args->arguments.arguments;
@@ -412,20 +408,20 @@ void assembly_check_node(AstNode* node) {
                                //  AstNode* arguments;
                                std::string reg_name = get_new_reg_name(NULL);
                                node->result_reg = str_to_char(reg_name);
-                               //cout <<  node->function.name << " " << reg_name ;
 
-                               //std::cout << "Function name is " << node->function.name << std::endl;
                                AstNode* func_args =  node->function.arguments; 
 
                                //AstNode* arguments;
                                //AstNode* expression;
-                               std::cout << node->function.name << " " << reg_name;
+                               //std::cout << node->function.name << " " << reg_name;
+                               PRINT_OUT("%s %s", node->function.name, reg_name.c_str());
                                while(func_args != NULL){
-                                   cout << ", " << func_args->result_reg;
-                                   //cout << "Expression reg is " << func_args->result_reg;
+                                   // cout << ", " << func_args->result_reg;
+                                   PRINT_OUT(", %s", func_args->result_reg);
                                    func_args = func_args->arguments.arguments;
                                }
-                               std::cout << " ;" << std::endl;
+                               PRINT_OUT(" ;\n");
+                               //std::cout << " ;" << std::endl;
 
                                break;
 
