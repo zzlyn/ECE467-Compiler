@@ -257,7 +257,16 @@ void assembly_check_node(AstNode* node) {
 
         case BOOL_NODE: {// Needs to set ExprEval.
 
-                            node->result_reg = str_to_char(to_string(node->boolean.val));
+
+				if(node->boolean.val == 1){
+					node->result_reg = str_to_char(to_string(1));
+				}
+
+				else{
+                                        node->result_reg = str_to_char(to_string(-0.5));
+
+				}
+
 
                             //  struct {
                             //            bool val;
